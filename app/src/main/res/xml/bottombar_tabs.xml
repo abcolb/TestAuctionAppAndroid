@@ -1,0 +1,16 @@
+<resources>
+    <tabs>
+        <tab
+            id="@+id/tab_all_items"
+            icon="@drawable/ic_all_items"
+            title="All items" />
+        <tab
+            id="@+id/tab_no_bids"
+            icon="@drawable/ic_no_bids"
+            title="No bids" />
+        <tab
+            id="@+id/tab_my_bids"
+            icon="@drawable/ic_my_bids"
+            title="My bids" />
+    </tabs>
+</resources>
