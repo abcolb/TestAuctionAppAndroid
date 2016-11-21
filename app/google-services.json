@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "747549583170",
+    "firebase_url": "https://hstest-14683.firebaseio.com",
+    "project_id": "hstest-14683",
+    "storage_bucket": "hstest-14683.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:747549583170:android:91b8a911b33fea0c",
+        "android_client_info": {
+          "package_name": "com.hubspot.auctionapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "747549583170-tam0221qolci5hsfud800hh4n450sd62.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCt8k1XVT8Jika4g2rp9HoJ60zKuwxovxA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
