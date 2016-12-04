@@ -23,6 +23,7 @@ package com.hubspot.auctionapp;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Map;
 
 public class Item {
 
@@ -33,7 +34,8 @@ public class Item {
   public Integer qty;
   public String donorname;
   public String description;
-  public Boolean isLive;
+  // public Boolean islive;
+  // public Map<String, Object> bids;
 
   public Item() {
     // Default constructor required for calls to DataSnapshot.getValue(Item.class)

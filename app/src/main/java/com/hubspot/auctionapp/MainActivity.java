@@ -2,34 +2,27 @@ package com.hubspot.auctionapp;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.*;
 import android.util.Log;
 import android.widget.SearchView;
 import android.view.MenuInflater;
 import android.view.View;
 import android.widget.ListView;
-import android.app.ActionBar;
 import android.widget.*;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.PopupMenu;
 import android.widget.AdapterView.OnItemClickListener;
 import android.content.Intent;
-import android.support.annotation.IdRes;
 
 import com.firebase.client.Firebase;
-import com.firebase.client.FirebaseError;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ValueEventListener;
 import com.firebase.ui.database.FirebaseListAdapter;
 
 import com.squareup.picasso.Picasso;
 import com.roughike.bottombar.BottomBar;
-import com.roughike.bottombar.OnTabSelectListener;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -87,7 +80,7 @@ public class MainActivity extends AppCompatActivity{
 
     mListView = (ListView) findViewById(R.id.items_list_view);
 
-    mAdapter = new FirebaseListAdapter<Item>(this, Item.class, R.layout.list_item_recipe, itemsRef) {
+    mAdapter = new FirebaseListAdapter<Item>(this, Item.class, R.layout.list_item, itemsRef) {
       @Override
       protected void populateView(View view, Item item, int position) {
         Log.d("ITEM!!!!!", String.valueOf(item));
@@ -95,9 +88,11 @@ public class MainActivity extends AppCompatActivity{
                 .load(item.getImageurl())
                 .placeholder(R.drawable.ic_item_image)
                 .error(R.drawable.ic_item_image)
-                .into((ImageView) view.findViewById(R.id.recipe_list_thumbnail));
-        ((TextView) view.findViewById(R.id.recipe_list_title)).setText(item.name);
-        ((TextView) view.findViewById(R.id.recipe_list_subtitle)).setText(item.description);
+                .into((ImageView) view.findViewById(R.id.item_thumbnail));
+        ((TextView) view.findViewById(R.id.item_title)).setText(item.name);
+        ((TextView) view.findViewById(R.id.item_donorname)).setText(item.donorname);
+        ((TextView) view.findViewById(R.id.item_num_available)).setText(getString((R.string.num_available), String.valueOf(item.qty)));
+        ((TextView) view.findViewById(R.id.item_description)).setText(item.description);
       }
     };
     mListView.setAdapter(mAdapter);
