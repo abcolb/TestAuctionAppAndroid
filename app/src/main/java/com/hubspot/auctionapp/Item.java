@@ -26,13 +26,13 @@ import java.net.URL;
 
 public class Item {
 
-  public String shortname;
+  public String name;
   public Integer openbid;
   public String donoremail;
   public String imageurl;
   public Integer qty;
   public String donorname;
-  public String longname;
+  public String description;
   public Boolean isLive;
 
   public Item() {

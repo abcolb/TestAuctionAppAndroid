@@ -1,26 +1,4 @@
-/*
- * Copyright (c) 2016 Razeware LLC
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
 package com.hubspot.auctionapp;
-
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -44,6 +22,8 @@ import com.firebase.client.FirebaseError;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ValueEventListener;
 import com.firebase.ui.database.FirebaseListAdapter;
 
@@ -54,13 +34,32 @@ import com.roughike.bottombar.OnTabSelectListener;
 public class MainActivity extends AppCompatActivity{
 
   private DatabaseReference itemsRef;
+  private FirebaseAuth mFirebaseAuth;
+  private FirebaseUser mFirebaseUser;
   private ListView mListView;
   private FirebaseListAdapter<Item> mAdapter;
   private BottomBar mBottomBar;
 
+  private void loadLogInView() {
+    Intent intent = new Intent(this, LoginActivity.class);
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+    startActivity(intent);
+  }
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+
+    // Initialize Firebase Auth
+    mFirebaseAuth = FirebaseAuth.getInstance();
+    mFirebaseUser = mFirebaseAuth.getCurrentUser();
+
+    if (mFirebaseUser == null) {
+      // Not logged in, launch the Log In activity
+      loadLogInView();
+    }
+
     setContentView(R.layout.activity_main);
 
     /*mBottomBar = (BottomBar) findViewById(R.id.bottomBar);
@@ -91,14 +90,14 @@ public class MainActivity extends AppCompatActivity{
     mAdapter = new FirebaseListAdapter<Item>(this, Item.class, R.layout.list_item_recipe, itemsRef) {
       @Override
       protected void populateView(View view, Item item, int position) {
-        Log.d("URL!!!!!", item.getImageurl());
+        Log.d("ITEM!!!!!", String.valueOf(item));
         Picasso.with(view.getContext())
                 .load(item.getImageurl())
                 .placeholder(R.drawable.ic_item_image)
                 .error(R.drawable.ic_item_image)
                 .into((ImageView) view.findViewById(R.id.recipe_list_thumbnail));
-        ((TextView) view.findViewById(R.id.recipe_list_title)).setText(item.shortname);
-        ((TextView) view.findViewById(R.id.recipe_list_subtitle)).setText(item.longname);
+        ((TextView) view.findViewById(R.id.recipe_list_title)).setText(item.name);
+        ((TextView) view.findViewById(R.id.recipe_list_subtitle)).setText(item.description);
       }
     };
     mListView.setAdapter(mAdapter);
@@ -108,7 +107,7 @@ public class MainActivity extends AppCompatActivity{
       public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Item selectedItem = (Item) parent.getItemAtPosition(position);
         Intent intent = new Intent(view.getContext(), ItemDetailActivity.class);
-        intent.putExtra("itemRef", selectedItem.shortname);
+        intent.putExtra("itemRef", selectedItem.name);
         startActivity(intent);
       }
     });
