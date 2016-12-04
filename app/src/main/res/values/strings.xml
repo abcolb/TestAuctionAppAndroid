@@ -16,4 +16,5 @@
 
     <!-- Items list -->
     <string name="num_available">%1$s Available</string>
+    <string name="bid_now">BID NOW</string>
 </resources>

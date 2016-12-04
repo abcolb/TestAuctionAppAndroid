@@ -83,7 +83,6 @@ public class MainActivity extends AppCompatActivity{
     mAdapter = new FirebaseListAdapter<Item>(this, Item.class, R.layout.list_item, itemsRef) {
       @Override
       protected void populateView(View view, Item item, int position) {
-        Log.d("ITEM!!!!!", String.valueOf(item));
         Picasso.with(view.getContext())
                 .load(item.getImageurl())
                 .placeholder(R.drawable.ic_item_image)
@@ -93,6 +92,41 @@ public class MainActivity extends AppCompatActivity{
         ((TextView) view.findViewById(R.id.item_donorname)).setText(item.donorname);
         ((TextView) view.findViewById(R.id.item_num_available)).setText(getString((R.string.num_available), String.valueOf(item.qty)));
         ((TextView) view.findViewById(R.id.item_description)).setText(item.description);
+
+        /*let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy/MM/dd HH:mm"
+        // SMOKE TEST DATA
+        // let BIDDING_OPENS = formatter.date(from: "2016/12/12 15:00")
+        // let BIDDING_CLOSES = formatter.date(from: "2016/12/14 20:00")
+        // let LIVE_BIDDING_OPENS = formatter.date(from: "2016/12/14 17:00")
+
+        // LIVE AUCTION DATA
+        // let BIDDING_OPENS = formatter.date(from: "2016/12/12 15:00")
+        // let BIDDING_CLOSES = formatter.date(from: "2016/12/14 20:00")
+        // let LIVE_BIDDING_OPENS = formatter.date(from: "2016/12/14 17:00")
+
+        let BIDDING_OPENS = formatter.date(from: "2016/11/12 15:00")
+        let BIDDING_CLOSES = formatter.date(from: "2016/12/14 20:00")
+        let LIVE_BIDDING_OPENS = formatter.date(from: "2016/12/14 17:00")
+
+        let now = NSDate()
+
+        if (now.compare(BIDDING_CLOSES!) == ComparisonResult.orderedDescending) {
+          cell.bidNowButton.isHidden = true
+        }
+        if (item.isLive) {
+          if (now.compare(LIVE_BIDDING_OPENS!) != ComparisonResult.orderedDescending) {
+            cell.bidNowButton.isHidden = true
+          }
+        } else {
+          if (now.compare(BIDDING_OPENS!) != ComparisonResult.orderedDescending) {
+            cell.bidNowButton.isHidden = true
+          }
+        }*/
+
+        if (item.islive == 0) {
+          ((TextView) view.findViewById(R.id.item_detail)).setText(getString(R.string.bid_now));
+        }
       }
     };
     mListView.setAdapter(mAdapter);

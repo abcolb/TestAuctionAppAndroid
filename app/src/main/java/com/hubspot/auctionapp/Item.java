@@ -34,7 +34,7 @@ public class Item {
   public Integer qty;
   public String donorname;
   public String description;
-  // public Boolean islive;
+  public Integer islive;
   // public Map<String, Object> bids;
 
   public Item() {

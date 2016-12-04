@@ -2,7 +2,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:backgroundTint="@color/colorBackground">
 
   <ImageView
       android:id="@+id/item_thumbnail"
@@ -27,7 +28,7 @@
       android:layout_marginEnd="2dp"
       android:maxLines="1"
       android:paddingEnd="4dp"
-      android:textColor="#000000"
+      android:textColor="@color/colorAccent"
       android:textSize="12sp"
       tools:text="Detail"
       />
@@ -47,24 +48,26 @@
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:textSize="18sp"
+        android:textColor="@color/colorPrimary"
         android:ellipsize="end"
         android:maxLines="1"
         tools:text="Title"
         />
 
     <TextView
-      android:id="@+id/item_donorname"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_below="@+id/item_title"
-      android:layout_marginLeft="8dp"
-      android:layout_marginRight="8dp"
-      android:layout_marginTop="2dp"
-      android:ellipsize="end"
-      android:maxLines="1"
-      android:textSize="16sp"
-      tools:text="Donor name"
-      />
+        android:id="@+id/item_donorname"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/item_title"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="2dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textSize="16sp"
+        android:textColor="@color/colorPrimary"
+        tools:text="Donor name"
+        />
 
     <TextView
         android:id="@+id/item_num_available"
@@ -77,6 +80,7 @@
         android:ellipsize="end"
         android:maxLines="1"
         android:textSize="16sp"
+        android:textColor="@color/colorPrimary"
         tools:text="1 Available"
         />
 
@@ -91,6 +95,7 @@
         android:ellipsize="end"
         android:maxLines="1"
         android:textSize="16sp"
+        android:textColor="@color/colorPrimary"
         tools:text="Description"
         />
 
