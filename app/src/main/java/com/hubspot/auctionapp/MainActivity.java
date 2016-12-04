@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity{
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
-    mBottomBar = (BottomBar) findViewById(R.id.bottomBar);
+    /*mBottomBar = (BottomBar) findViewById(R.id.bottomBar);
     mBottomBar.setOnTabSelectListener(new OnTabSelectListener() {
       @Override
       public void onTabSelected(@IdRes int tabId) {
@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity{
             return super.onTabSelected(tabId);
         }
       }
-    });
+    });*/
 
     Firebase.setAndroidContext(this);
     itemsRef = FirebaseDatabase.getInstance().getReference("items");
