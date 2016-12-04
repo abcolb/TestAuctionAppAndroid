@@ -55,10 +55,10 @@ public class MainActivity extends AppCompatActivity{
     mFirebaseAuth = FirebaseAuth.getInstance();
     mFirebaseUser = mFirebaseAuth.getCurrentUser();
 
-    if (mFirebaseUser == null) {
+    /*if (mFirebaseUser == null) {
       // Not logged in, launch the Log In activity
       loadLogInView();
-    }
+    }*/
 
     setContentView(R.layout.activity_main);
 
