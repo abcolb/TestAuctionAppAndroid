@@ -14,7 +14,12 @@
     <string name="error_field_required">This field is required</string>
     <string name="error_login">Login error</string>
 
-    <!-- Items list -->
+    <!-- Fragments -->
+    <string name="heading_all_items">All Items</string>
+    <string name="heading_no_bids">No Bids</string>
+    <string name="heading_my_bids">My Bids</string>
+
+    <!-- Item -->
     <string name="num_available">%1$s Available</string>
     <string name="bid_now">BID NOW</string>
 </resources>

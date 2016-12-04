@@ -2,7 +2,6 @@ package com.hubspot.auctionapp;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.widget.SearchView;
 import android.view.MenuInflater;
 import android.view.View;
@@ -13,25 +12,36 @@ import android.view.MenuItem;
 import android.widget.PopupMenu;
 import android.widget.AdapterView.OnItemClickListener;
 import android.content.Intent;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.support.design.widget.TabLayout;
 
 import com.firebase.client.Firebase;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.firebase.ui.database.FirebaseListAdapter;
+import com.google.firebase.database.DatabaseReference;
 
 import com.squareup.picasso.Picasso;
-import com.roughike.bottombar.BottomBar;
 
-public class MainActivity extends AppCompatActivity{
+import com.hubspot.auctionapp.models.Item;
+import com.hubspot.auctionapp.fragments.AllItemsFragment;
+import com.hubspot.auctionapp.fragments.MyBidsFragment;
+import com.hubspot.auctionapp.fragments.NoBidsFragment;
 
-  private DatabaseReference itemsRef;
+public class MainActivity extends BaseActivity {
+
+  private static final String TAG = "MainActivity";
+
+  private FragmentPagerAdapter mPagerAdapter;
+  private ViewPager mViewPager;
+
+  /*private DatabaseReference itemsRef;
   private FirebaseAuth mFirebaseAuth;
   private FirebaseUser mFirebaseUser;
   private ListView mListView;
   private FirebaseListAdapter<Item> mAdapter;
-  private BottomBar mBottomBar;
+  private BottomBar mBottomBar;*/
 
   private void loadLogInView() {
     Intent intent = new Intent(this, LoginActivity.class);
@@ -44,9 +54,10 @@ public class MainActivity extends AppCompatActivity{
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
+    Firebase.setAndroidContext(this);
     // Initialize Firebase Auth
-    mFirebaseAuth = FirebaseAuth.getInstance();
-    mFirebaseUser = mFirebaseAuth.getCurrentUser();
+    //mFirebaseAuth = FirebaseAuth.getInstance();
+    //mFirebaseUser = mFirebaseAuth.getCurrentUser();
 
     /*if (mFirebaseUser == null) {
       // Not logged in, launch the Log In activity
@@ -54,6 +65,37 @@ public class MainActivity extends AppCompatActivity{
     }*/
 
     setContentView(R.layout.activity_main);
+
+    // Create the adapter that will return a fragment for each section
+    mPagerAdapter = new FragmentPagerAdapter(getSupportFragmentManager()) {
+      private final Fragment[] mFragments = new Fragment[] {
+              new AllItemsFragment(),
+              new NoBidsFragment(),
+              new MyBidsFragment(),
+      };
+      private final String[] mFragmentNames = new String[] {
+              getString(R.string.heading_all_items),
+              getString(R.string.heading_no_bids),
+              getString(R.string.heading_my_bids)
+      };
+      @Override
+      public Fragment getItem(int position) {
+        return mFragments[position];
+      }
+      @Override
+      public int getCount() {
+        return mFragments.length;
+      }
+      @Override
+      public CharSequence getPageTitle(int position) {
+        return mFragmentNames[position];
+      }
+    };
+
+    mViewPager = (ViewPager) findViewById(R.id.container);
+    mViewPager.setAdapter(mPagerAdapter);
+    TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+    tabLayout.setupWithViewPager(mViewPager);
 
     /*mBottomBar = (BottomBar) findViewById(R.id.bottomBar);
     mBottomBar.setOnTabSelectListener(new OnTabSelectListener() {
@@ -75,8 +117,7 @@ public class MainActivity extends AppCompatActivity{
       }
     });*/
 
-    Firebase.setAndroidContext(this);
-    itemsRef = FirebaseDatabase.getInstance().getReference("items");
+    /*itemsRef = FirebaseDatabase.getInstance().getReference("items");
 
     mListView = (ListView) findViewById(R.id.items_list_view);
 
@@ -91,55 +132,7 @@ public class MainActivity extends AppCompatActivity{
         ((TextView) view.findViewById(R.id.item_title)).setText(item.name);
         ((TextView) view.findViewById(R.id.item_donorname)).setText(item.donorname);
         ((TextView) view.findViewById(R.id.item_num_available)).setText(getString((R.string.num_available), String.valueOf(item.qty)));
-        ((TextView) view.findViewById(R.id.item_description)).setText(item.description);
-
-        /*let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy/MM/dd HH:mm"
-        // SMOKE TEST DATA
-        // let BIDDING_OPENS = formatter.date(from: "2016/12/12 15:00")
-        // let BIDDING_CLOSES = formatter.date(from: "2016/12/14 20:00")
-        // let LIVE_BIDDING_OPENS = formatter.date(from: "2016/12/14 17:00")
-
-        // LIVE AUCTION DATA
-        // let BIDDING_OPENS = formatter.date(from: "2016/12/12 15:00")
-        // let BIDDING_CLOSES = formatter.date(from: "2016/12/14 20:00")
-        // let LIVE_BIDDING_OPENS = formatter.date(from: "2016/12/14 17:00")
-
-        let BIDDING_OPENS = formatter.date(from: "2016/11/12 15:00")
-        let BIDDING_CLOSES = formatter.date(from: "2016/12/14 20:00")
-        let LIVE_BIDDING_OPENS = formatter.date(from: "2016/12/14 17:00")
-
-        let now = NSDate()
-
-        if (now.compare(BIDDING_CLOSES!) == ComparisonResult.orderedDescending) {
-          cell.bidNowButton.isHidden = true
-        }
-        if (item.isLive) {
-          if (now.compare(LIVE_BIDDING_OPENS!) != ComparisonResult.orderedDescending) {
-            cell.bidNowButton.isHidden = true
-          }
-        } else {
-          if (now.compare(BIDDING_OPENS!) != ComparisonResult.orderedDescending) {
-            cell.bidNowButton.isHidden = true
-          }
-        }*/
-
-        if (item.islive == 0) {
-          ((TextView) view.findViewById(R.id.item_detail)).setText(getString(R.string.bid_now));
-        }
-      }
-    };
-    mListView.setAdapter(mAdapter);
-
-    mListView.setOnItemClickListener(new OnItemClickListener() {
-      @Override
-      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Item selectedItem = (Item) parent.getItemAtPosition(position);
-        Intent intent = new Intent(view.getContext(), ItemDetailActivity.class);
-        intent.putExtra("itemRef", selectedItem.name);
-        startActivity(intent);
-      }
-    });
+        ((TextView) view.findViewById(R.id.item_description)).setText(item.description);*/
   }
 
   @Override
@@ -169,6 +162,19 @@ public class MainActivity extends AppCompatActivity{
     View menuItemView = findViewById(R.id.menu_popup);
     PopupMenu popup = new PopupMenu(menuItemView.getContext(), menuItemView);
     popup.show();
+
+    /*@Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+      int i = item.getItemId();
+      if (i == R.id.action_logout) {
+        FirebaseAuth.getInstance().signOut();
+        startActivity(new Intent(this, SignInActivity.class));
+        finish();
+        return true;
+      } else {
+        return super.onOptionsItemSelected(item);
+      }
+    }*/
   }
 
   @Override
@@ -181,12 +187,6 @@ public class MainActivity extends AppCompatActivity{
       default:
         return super.onOptionsItemSelected(item);
     }
-  }
-
-  @Override
-  protected void onDestroy() {
-    super.onDestroy();
-    mAdapter.cleanup();
   }
 
 }
