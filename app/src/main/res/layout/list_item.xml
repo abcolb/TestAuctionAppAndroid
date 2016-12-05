@@ -33,8 +33,9 @@
       android:maxLines="1"
       android:paddingEnd="4dp"
       android:textColor="@color/colorAccent"
-      android:textSize="12sp"
-      tools:text="Detail"
+      android:textSize="14sp"
+      android:textStyle="bold"
+      tools:text="DETAIL"
       />
 
   <RelativeLayout

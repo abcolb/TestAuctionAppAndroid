@@ -116,7 +116,12 @@ public class LoginActivity extends AppCompatActivity {
 
 
     private void attemptSignUp() {
-
+        /*Firebase ref = Firebase(url: "https://<YOUR-FIREBASE-APP>.firebaseio.com");
+        Firebase userRef = ref.child("user");
+        Map newUserData = new HashMap();
+        newUserData.put("age", 30);
+        newUserData.put("city", "Provo, UT");
+        userRef.updateChildren(newUserData);*/
     }
 
     private boolean isEmailValid(String email) {

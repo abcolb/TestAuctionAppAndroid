@@ -9,8 +9,7 @@ public class MyBidsFragment extends ItemListFragment {
 
     @Override
     public Query getQuery(DatabaseReference databaseReference) {
-        // All my bids
-        //return databaseReference.child("user-items").child(getUid());
-        return databaseReference.child("user").child(getUid()).child("item-bids");
+        //return databaseReference.child("user").child(getUid()).child("item-bids");
+        return databaseReference.child("user").child("rMgkho6veQNorDFbr9fsgxVmjC33").child("item-bids");
     }
 }
