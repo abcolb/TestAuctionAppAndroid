@@ -1,5 +1,7 @@
 package com.hubspot.auctionapp;
 
+import java.util.Date;
+import java.text.SimpleDateFormat;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.util.Log;
@@ -41,6 +43,11 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
     private String mItemKey;
 
     private ArrayList<Bid> mWinningBids;
+    private Boolean mUserIsWinning = false;
+    private Integer mMinBid = 100000;
+    private Integer mMinBidLow;
+    private Integer mMinBidMid;
+    private Integer mMinBidHigh;
 
     private ImageView mImageView;
     private TextView mNameView;
@@ -69,11 +76,8 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
 
         mItemReference = FirebaseDatabase.getInstance().getReference().child("items").child(mItemKey);
         mBidsReference = FirebaseDatabase.getInstance().getReference().child("item-bids").child(mItemKey);
-        // mBidsReference = FirebaseDatabase.getInstance().getReference().child("item").child(mItemKey).child("bids");
 
-        //mItemDetailView = (View) findViewById(R.id.)
         mImageView = (ImageView) findViewById(R.id.item_image);
-
         mNameView = (TextView) findViewById(R.id.item_detail_name);
         mDonorView = (TextView) findViewById(R.id.item_detail_donorname);
         mNumAvailableView = (TextView) findViewById(R.id.item_num_available);
@@ -118,6 +122,13 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
                     mNumBidsView.setText("SUGGESTED OPENING BID");
                     mWinningBidsView.setText("$" + String.valueOf(mItem.openbid));
                     mWinningBidsView.setTextColor(Color.parseColor("#425b76"));
+                    mMinBid = mItem.openbid;
+                    mMinBidLow = mMinBid + 1;
+                    mMinBidMid = mMinBid + 5;
+                    mMinBidHigh = mMinBid + 10;
+                    mBidButtonLow.setText("$" + mMinBidLow);
+                    mBidButtonMid.setText("$" + mMinBidMid);
+                    mBidButtonHigh.setText("$" + mMinBidHigh);
                 }
 
                 mWinningBids = new ArrayList<>();
@@ -133,13 +144,35 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
                                 mWinningBids.add(bid);
                             }
                             if (mWinningBids.size() > 0) {
-                                mNumBidsView.setText("WINNING BIDS (" + String.valueOf(mWinningBids.size()) + " total bids)");
+
+                                // DO ANOTHER addListenerForSingleValueEvent here!
+
                                 String winningBidsString = "";
                                 for (Bid bid : mWinningBids) {
-                                    Log.d("BID", String.valueOf(bid.amount));
+                                    Log.d("MIN BID", String.valueOf(mMinBid));
+                                    Log.d("BID AMOUNT", String.valueOf(bid.amount));
+                                    if (mMinBid > bid.amount) { // set lowest in range
+                                        mMinBid = bid.amount;
+                                    }
                                     winningBidsString = winningBidsString.concat("$" + String.valueOf(bid.amount) + " ");
                                 }
+
+                                /*if (mUserIsWinning) {
+                                    mNumBidsView.setText("NICE! YOUR BID OF $" + String.valueOf(50) + " IS WINNING");
+                                } else if (userHasBid) {
+                                    mNumBidsView.setText("YOU'VE BEEN OUTBID!");
+                                } else {
+                                    mNumBidsView.setText("WINNING BIDS (" + String.valueOf(mWinningBids.size()) + " total bids)");
+                                }*/
+                                mNumBidsView.setText("WINNING BIDS (" + String.valueOf(mWinningBids.size()) + " total bids)");
+
                                 mWinningBidsView.setText(winningBidsString);
+                                mMinBidLow = mMinBid + 1;
+                                mMinBidMid = mMinBid + 5;
+                                mMinBidHigh = mMinBid + 10;
+                                mBidButtonLow.setText("$" + mMinBidLow);
+                                mBidButtonMid.setText("$" + mMinBidMid);
+                                mBidButtonHigh.setText("$" + mMinBidHigh);
                             }
                         }
                         @Override
@@ -149,72 +182,59 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
                     }
                 );
 
-                /*
-                //bidderSegmentControl
-                increments = item.getIncrements()
-
-                let attr = [NSFontAttributeName: UIFont(name: "AvenirNext-Regular", size: 18) ?? UIFont.systemFont(ofSize: 18)]
-                bidderSegmentedControl.setTitleTextAttributes(attr, for: UIControlState.normal)
-                bidderSegmentedControl.setTitle("$" + String(increments[0]), forSegmentAt: 0)
-                bidderSegmentedControl.setTitle("$" + String(increments[1]), forSegmentAt: 1)
-                bidderSegmentedControl.setTitle("$" + String(increments[2]), forSegmentAt: 2)
-                bidderSegmentedControl.selectedSegmentIndex = -1
-
-                //biddingStatusLabel
-
-                let formatter = DateFormatter()
-                formatter.dateFormat = "yyyy/MM/dd HH:mm"
+                Date now = new Date();
 
                 // SMOKE TEST DATA
-                // let BIDDING_OPENS = formatter.date(from: "2016/12/12 15:00")
-                // let BIDDING_CLOSES = formatter.date(from: "2016/12/14 20:00")
-                // let LIVE_BIDDING_OPENS = formatter.date(from: "2016/12/14 17:00")
+                // Date BIDDING_OPENS = new Date(1481036400000L); // "2016/12/6 10:00"
+                // Date BIDDING_CLOSES = new Date(1481065200000L); // "2016/12/6 18:00"
+                // Date LIVE_BIDDING_OPENS = new Date(1481054400000L); //"2016/12/6 15:00"
 
                 // LIVE AUCTION DATA
-                // let BIDDING_OPENS = formatter.date(from: "2016/12/12 15:00")
-                // let BIDDING_CLOSES = formatter.date(from: "2016/12/14 20:00")
-                // let LIVE_BIDDING_OPENS = formatter.date(from: "2016/12/14 17:00")
+                // Date BIDDING_OPENS = new Date(1481292000000L); // "2016/12/9 9:00"
+                // Date BIDDING_CLOSES = new Date(1481763600000L); // "2016/12/14 20:00"
+                // Date LIVE_BIDDING_OPENS = new Date(1481752800000L); //"2016/12/14 17:00"
 
-                let BIDDING_OPENS = formatter.date(from: "2016/11/12 15:00")
-                let BIDDING_CLOSES = formatter.date(from: "2016/12/14 20:00")
-                let LIVE_BIDDING_OPENS = formatter.date(from: "2016/12/14 17:00")
+                Date BIDDING_OPENS = new Date(1478980800000L); // "2016/11/12 15:00"
+                Date BIDDING_CLOSES = new Date(1481763600000L); // "2016/12/14 20:00"
+                Date LIVE_BIDDING_OPENS = new Date(1481752800000L); //"2016/12/14 17:00"
 
-                let now = NSDate()
+                SimpleDateFormat sdf = new SimpleDateFormat("MM/dd HH:mm");
 
-                if (now.compare(BIDDING_CLOSES!) == ComparisonResult.orderedDescending) {
-                    bidderSegmentedControl.isEnabled = false
-                    bidderSegmentedControl.tintColor = UIColor(red:0.26, green:0.36, blue:0.46, alpha:1.0)
-                    biddingStatusLabel.text = ("Sorry, bidding has closed").uppercased()
-                }
-                if (item.isLive) {
-                    if (now.compare(LIVE_BIDDING_OPENS!) == ComparisonResult.orderedDescending) {
-                        biddingStatusLabel.text = ("Bidding closes " + formatter.string(from: BIDDING_CLOSES!)).uppercased()
+                Log.d("BIDDING_CLOSES", sdf.format(BIDDING_CLOSES));
+                Log.d("BIDDING AVAILABLE", String.valueOf(now.before(BIDDING_CLOSES)));
+
+                if (now.after(BIDDING_CLOSES)) {
+                    mBidButtonLow.setEnabled(false);
+                    mBidButtonMid.setEnabled(false);
+                    mBidButtonHigh.setEnabled(false);
+                    mBidButtonCustom.setEnabled(false);
+                    mBiddingStatusView.setText("SORRY, BIDDING HAS CLOSED");
+                } else if (mItem.getIslive()) {
+                    if (now.after(LIVE_BIDDING_OPENS)) {
+                        mBiddingStatusView.setText("BIDDING CLOSES " + sdf.format(BIDDING_CLOSES));
                     } else {
-                        bidderSegmentedControl.isEnabled = false
-                        bidderSegmentedControl.tintColor = UIColor(red:0.26, green:0.36, blue:0.46, alpha:1.0)
-                        biddingStatusLabel.text = ("Bidding opens " + formatter.string(from: LIVE_BIDDING_OPENS!)).uppercased()
+                        mBidButtonLow.setEnabled(false);
+                        mBidButtonMid.setEnabled(false);
+                        mBidButtonHigh.setEnabled(false);
+                        mBidButtonCustom.setEnabled(false);
+                        mBiddingStatusView.setText("BIDDING OPENS " + sdf.format(LIVE_BIDDING_OPENS));
                     }
                 } else {
-                    if (now.compare(BIDDING_OPENS!) == ComparisonResult.orderedDescending) {
-                        biddingStatusLabel.text = ("Bidding closes " + formatter.string(from: BIDDING_CLOSES!)).uppercased()
+                    if (now.after(BIDDING_OPENS)) {
+                        mBiddingStatusView.setText("BIDDING CLOSES " + sdf.format(BIDDING_CLOSES));
                     } else {
-                        bidderSegmentedControl.isEnabled = false
-                        bidderSegmentedControl.tintColor = UIColor(red:0.26, green:0.36, blue:0.46, alpha:1.0)
-                        biddingStatusLabel.text = ("Bidding opens " + formatter.string(from: BIDDING_OPENS!)).uppercased()
+                        mBidButtonLow.setEnabled(false);
+                        mBidButtonMid.setEnabled(false);
+                        mBidButtonHigh.setEnabled(false);
+                        mBidButtonCustom.setEnabled(false);
+                        mBiddingStatusView.setText("BIDDING OPENS " + sdf.format(LIVE_BIDDING_OPENS));
                     }
-                }*/
-
-                // mBidButtonLow.setText();
-                // mBidButtonMid.setText();
-                // mBidButtonHigh.setText();
-
-                mBiddingStatusView.setText(mItem.getBiddingTimelineString());
+                }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 Log.w(TAG, "loadItem:onCancelled", databaseError.toException());
-                // Toast.makeText(ItemDetailActivity.this, "Failed to load item.", Toast.LENGTH_SHORT).show();
             }
         };
         mItemReference.addValueEventListener(itemListener);
@@ -234,13 +254,13 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
     public void onClick(View v) {
         int i = v.getId();
         if (i == R.id.button_bid_low) {
-            alertBid(10);
+            alertBid(mMinBidLow);
         }
         if (i == R.id.button_bid_mid) {
-            alertBid(25);
+            alertBid(mMinBidMid);
         }
         if (i == R.id.button_bid_high) {
-            alertBid(50);
+            alertBid(mMinBidHigh);
         }
         if (i == R.id.button_bid_custom) {
             alertCustomBid();
