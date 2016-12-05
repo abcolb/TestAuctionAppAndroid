@@ -1,21 +1,13 @@
 package com.hubspot.auctionapp;
 
-import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.IntegerRes;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import android.provider.ContactsContract;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 
@@ -24,15 +16,17 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-
 import com.firebase.client.FirebaseError;
-import com.google.firebase.database.DatabaseReference;
+
 import com.hubspot.auctionapp.models.Item;
 import com.hubspot.auctionapp.models.Bid;
 import com.hubspot.auctionapp.models.User;
-import com.hubspot.auctionapp.R;
+
 import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
 
 public class ItemDetailActivity extends BaseActivity implements View.OnClickListener {
 
@@ -40,12 +34,13 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
 
     public static final String EXTRA_ITEM_KEY = "item_key";
 
+    private Item mItem;
     private DatabaseReference mItemReference;
     private DatabaseReference mBidsReference;
     private ValueEventListener mItemListener;
     private String mItemKey;
 
-    //public View mItemDetailView;
+    private ArrayList<Bid> mWinningBids;
 
     private ImageView mImageView;
     private TextView mNameView;
@@ -106,27 +101,53 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
         ValueEventListener itemListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Item item = dataSnapshot.getValue(Item.class);
-                mNameView.setText(item.getName());
-                mDonorView.setText(item.getDonorname());
-                mNumAvailableView.setText(String.valueOf(item.getQty()) + " Available");
-                mDescriptionView.setText(item.getDescription());
+                mItem = dataSnapshot.getValue(Item.class);
+                mNameView.setText(mItem.getName());
+                mDonorView.setText(mItem.getDonorname());
+                mNumAvailableView.setText(String.valueOf(mItem.getQty()) + " Available");
+                mDescriptionView.setText(mItem.getDescription());
 
                 Picasso.with(getBaseContext())
-                        .load(item.getImageurl())
+                        .load(mItem.getImageurl())
                         .placeholder(R.drawable.ic_item_image)
                         .error(R.drawable.ic_item_image)
                         .into(mImageView);
 
-                Integer numBids = item.getNumBids();
-                if (numBids > 0) {
-                    mNumBidsView.setText("WINNING BIDS (" + String.valueOf(numBids) + " so far)");
-                    mWinningBidsView.setText(item.getWinningBidsString());
-                } else {
+                Integer numBids = mItem.getNumBids();
+                if (numBids == 0) {
                     mNumBidsView.setText("SUGGESTED OPENING BID");
-                    mWinningBidsView.setText("$" + String.valueOf(item.openbid));
+                    mWinningBidsView.setText("$" + String.valueOf(mItem.openbid));
                     mWinningBidsView.setTextColor(Color.parseColor("#425b76"));
                 }
+
+                mWinningBids = new ArrayList<>();
+                String mWinningBidsString = "";
+                Query winningBidsQuery = mBidsReference.limitToLast(mItem.getQty());
+                winningBidsQuery.addListenerForSingleValueEvent(
+                    new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            Log.e("Count ", "" + dataSnapshot.getChildrenCount());
+                            for (DataSnapshot bidSnapshot : dataSnapshot.getChildren()) {
+                                Bid bid = bidSnapshot.getValue(Bid.class);
+                                mWinningBids.add(bid);
+                            }
+                            if (mWinningBids.size() > 0) {
+                                mNumBidsView.setText("WINNING BIDS (" + String.valueOf(mWinningBids.size()) + " total bids)");
+                                String winningBidsString = "";
+                                for (Bid bid : mWinningBids) {
+                                    Log.d("BID", String.valueOf(bid.amount));
+                                    winningBidsString = winningBidsString.concat("$" + String.valueOf(bid.amount) + " ");
+                                }
+                                mWinningBidsView.setText(winningBidsString);
+                            }
+                        }
+                        @Override
+                        public void onCancelled(DatabaseError firebaseError) {
+                            Log.e("The read failed: ", firebaseError.getMessage());
+                        }
+                    }
+                );
 
                 /*
                 //bidderSegmentControl
@@ -183,7 +204,11 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
                     }
                 }*/
 
-                mBiddingStatusView.setText("BIDDING OPENS 12/12/2016");
+                // mBidButtonLow.setText();
+                // mBidButtonMid.setText();
+                // mBidButtonHigh.setText();
+
+                mBiddingStatusView.setText(mItem.getBiddingTimelineString());
             }
 
             @Override
@@ -221,6 +246,23 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
             alertCustomBid();
         }
     }
+
+    public Boolean getIsUserWinning() {
+        //item.bids.first.email == user.email)
+        return true; // move to ItemDetailActivity
+    }
+
+    /*public String getBidStatus() {
+        if (!mItem.getIsBiddingOpen()) {
+            return "";
+        } else if (m) {
+            return "OUTBID!";
+        } else if (getIsUserWinning()) {
+            return "WINNING";
+        } else {
+            return "BID NOW";
+        }
+    }*/
 
     public void bidOn(Item item, Integer amount) {
         //let user = FIRAuth.auth()?.currentUser;
@@ -284,28 +326,28 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
     private void submitBid() {
         final String uid = getUid();
         FirebaseDatabase.getInstance().getReference().child("users").child(uid)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        // Get user information
-                        // User user = dataSnapshot.getValue(User.class);
-                        // String email = user.email;
+            .addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    // Get user information
+                    // User user = dataSnapshot.getValue(User.class);
+                    // String email = user.email;
 
-                        // Create new bid object
-                        // String commentText = mCommentField.getText().toString();
-                        Bid bid = new Bid(uid, 69);
+                    // Create new bid object
+                    // String commentText = mCommentField.getText().toString();
+                    Bid bid = new Bid(uid, 69);
 
-                        // Push the comment, it will appear in the list
-                        mBidsReference.push().setValue(bid);
+                    // Push the comment, it will appear in the list
+                    mBidsReference.push().setValue(bid);
 
-                        // Clear the field
-                        // mCommentField.setText(null);
-                    }
+                    // Clear the field
+                    // mCommentField.setText(null);
+                }
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
-                    }
-                });
+                }
+            });
     }
 }

@@ -1,5 +1,8 @@
 package com.hubspot.auctionapp.models;
 
+import com.google.firebase.database.DatabaseReference;
+
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -14,6 +17,8 @@ public class Item {
   public String description;
   public Integer islive;
   public Map<String, Boolean> bids = new HashMap<>();
+
+  public DatabaseReference itemRef;
 
   public Item() {
     // Default constructor required for calls to DataSnapshot.getValue(Item.class)
@@ -47,11 +52,7 @@ public class Item {
     return bids.size();
   }
 
-  public String getWinningBidsString() {
-    return "$50, $51, $52";
-  }
-
-  public String getBidStatus() {
+  public Boolean getIsBiddingOpen() {
     /*let formatter = DateFormatter()
     formatter.dateFormat = "yyyy/MM/dd HH:mm"
     // SMOKE TEST DATA
@@ -71,26 +72,62 @@ public class Item {
     let now = NSDate()
 
     if (now.compare(BIDDING_CLOSES!) == ComparisonResult.orderedDescending) {
-      cell.bidNowButton.isHidden = true
+      return false
     }
-    if (item.isLive) {
+    if (isLive) {
       if (now.compare(LIVE_BIDDING_OPENS!) != ComparisonResult.orderedDescending) {
-        cell.bidNowButton.isHidden = true
+        return false
       }
     } else {
       if (now.compare(BIDDING_OPENS!) != ComparisonResult.orderedDescending) {
-        cell.bidNowButton.isHidden = true
+        return false
       }
-    }*/
-
-    /*if (!item.getIslive()) {
-      ((TextView) view.findViewById(R.id.item_detail)).setText(getString(R.string.bid_now));
-    } else {
-      ((TextView) view.findViewById(R.id.item_detail)).s;
-    }*/
-    if (!this.getIslive()){
-      return "BID NOW"; // "WINNING", "OUTBID!"
     }
-    return "";
+    return true*/
+    return true;
   }
+
+  public String getBidStatus() {
+    if (!this.getIsBiddingOpen()) {
+      return "";
+    } else if (false) {
+      return "OUTBID!";
+    } else if (true) {
+      return "WINNING";
+    } else {
+      return "BID NOW";
+    }
+  }
+
+  public String getBiddingTimelineString() {
+    return "BIDDING OPENS 12/12/2016";
+  }
+
+  public Integer getPrice() {
+    if (this.bids.size() > 0) {
+      return 500; // new Bid(bids.first).getAmount()
+    }
+    return this.openbid;
+  }
+
+  public String getBidSize() {
+    Integer currentPrice = this.getPrice();
+    if (currentPrice < 50) {
+      return "SMALL";
+    } else if (currentPrice < 100) {
+      return "MEDIUM";
+    } return "LARGE";
+  }
+
+  //public ArrayList<Integer> getIncrements() {
+
+  /*let BIDDING_INCREMENTS : [String: [Int]] = [
+  "SMALL": [1, 5, 10],
+  "MEDIUM": [5, 10, 25],
+  "LARGE": [10, 25, 50]
+  ] */
+
+  //let suggestedIncremements = BIDDING_INCREMENTS[this.getBidType()]
+  //return [priceIncrements![0] + self.getPrice(), priceIncrements![1] + self.getPrice(), priceIncrements![2] + self.getPrice()]
+
 }

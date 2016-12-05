@@ -40,6 +40,10 @@ public class ItemViewHolder extends RecyclerView.ViewHolder {
             .into(imageView);
         numAvailableView.setText(String.valueOf(item.getQty()) + " Available");
         descriptionView.setText(item.getDescription());
+
+
+        //get bids once
+        //get bid status
         detailView.setText(item.getBidStatus());
         //View.setOnClickListener(onClickListener);
     }
