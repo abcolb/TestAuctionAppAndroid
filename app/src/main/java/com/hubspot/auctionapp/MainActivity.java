@@ -18,6 +18,7 @@ import android.support.v4.view.ViewPager;
 import android.support.design.widget.TabLayout;
 
 import com.firebase.client.Firebase;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 import com.firebase.ui.database.FirebaseListAdapter;
 import com.google.firebase.database.DatabaseReference;
@@ -183,6 +184,11 @@ public class MainActivity extends BaseActivity {
     switch (item.getItemId()) {
       case R.id.menu_popup:
         showPopup();
+        return true;
+      case R.id.menu_logout:
+        FirebaseAuth.getInstance().signOut();
+        startActivity(new Intent(this, LoginActivity.class));
+        finish();
         return true;
       default:
         return super.onOptionsItemSelected(item);

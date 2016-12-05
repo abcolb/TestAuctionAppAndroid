@@ -10,6 +10,7 @@ public class MyBidsFragment extends ItemListFragment {
     @Override
     public Query getQuery(DatabaseReference databaseReference) {
         //return databaseReference.child("user").child(getUid()).child("item-bids");
-        return databaseReference.child("user").child("rMgkho6veQNorDFbr9fsgxVmjC33").child("item-bids");
+        //return databaseReference.child("user").child("rMgkho6veQNorDFbr9fsgxVmjC33").child("item-bids");
+        return databaseReference.child("items").child("bids").equalTo(null);
     }
 }
