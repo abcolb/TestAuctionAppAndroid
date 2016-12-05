@@ -4,15 +4,15 @@ import com.google.firebase.database.IgnoreExtraProperties;
 
 public class Bid {
 
-    public String userid;
+    public String user;
     public Integer amount;
 
     public Bid() {
         // Default constructor required for calls to DataSnapshot.getValue(Bid.class)
     }
 
-    public Bid(String userid, Integer amount) {
-        this.userid = userid;
+    public Bid(String user, Integer amount) {
+        this.user = user;
         this.amount = amount;
     }
 
