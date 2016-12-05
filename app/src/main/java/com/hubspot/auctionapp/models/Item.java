@@ -47,6 +47,10 @@ public class Item {
     return bids.size();
   }
 
+  public String getWinningBidsString() {
+    return "$50, $51, $52";
+  }
+
   public String getBidStatus() {
     /*let formatter = DateFormatter()
     formatter.dateFormat = "yyyy/MM/dd HH:mm"

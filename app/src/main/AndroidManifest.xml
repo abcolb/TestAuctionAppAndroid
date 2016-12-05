@@ -12,6 +12,7 @@
     <application
         android:allowBackup="true"
         android:name="android.support.multidex.MultiDexApplication"
+        android:debuggable="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
@@ -31,7 +32,7 @@
         <activity android:name=".ItemDetailActivity" />
         <activity
             android:name=".LoginActivity"
-            android:label="@string/title_activity_login"></activity>
+            android:label="@string/action_log_in"></activity>
     </application>
 
 </manifest>

@@ -1,7 +1,5 @@
 <resources>
     <string name="app_name">HubSpot Charity Auction</string>
-    <string name="thumbnail">thumbnail</string>
-    <string name="title_activity_login">Sign in</string>
 
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
@@ -20,6 +18,10 @@
     <string name="heading_my_bids">My Bids</string>
 
     <!-- Item -->
+    <string name="thumbnail">thumbnail</string>
+    <string name="item_img">image</string>
     <string name="num_available">%1$s Available</string>
     <string name="bid_now">BID NOW</string>
+    <string name="winning">BID NOW</string>
+    <string name="outbid">BID NOW</string>
 </resources>
