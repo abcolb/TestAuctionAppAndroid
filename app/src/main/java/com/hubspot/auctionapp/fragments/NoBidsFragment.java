@@ -10,9 +10,6 @@ public class NoBidsFragment extends ItemListFragment {
 
     @Override
     public Query getQuery(DatabaseReference databaseReference) {
-        Query noBidsQuery = databaseReference.child("items");
-        //Query noBidsQuery = databaseReference.child("items").child("bids").equalTo(null);
-        Log.d("NO BIDS QUERY", String.valueOf(noBidsQuery));
-        return noBidsQuery;
+        return databaseReference.child("items").orderByChild("bids").endAt(null);
     }
 }
