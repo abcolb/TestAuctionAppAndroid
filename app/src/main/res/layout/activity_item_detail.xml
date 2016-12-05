@@ -5,23 +5,6 @@
     android:layout_height="match_parent"
     tools:context="com.hubspot.auctionapp.ItemDetailActivity">
 
-    <!--<include-->
-        <!--android:id="@+id/post_author_layout"-->
-        <!--layout="@layout/include_post_author"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_alignParentLeft="true" />-->
-
-    <!--<include-->
-        <!--android:id="@+id/post_text_layout"-->
-        <!--layout="@layout/include_post_text"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_alignParentLeft="true"-->
-        <!--android:layout_below="@+id/post_author_layout"-->
-        <!--android:layout_marginLeft="5dp"-->
-        <!--android:layout_marginTop="10dp" />-->
-
     <LinearLayout
         android:id="@+id/bid_form"
         android:layout_width="match_parent"
@@ -31,12 +14,30 @@
         android:weightSum="1.0">
 
         <Button
-            android:id="@+id/button_bid"
-            style="@style/Base.Widget.AppCompat.Button.Borderless"
+            android:id="@+id/button_bid_low"
             android:layout_width="0dp"
-            android:layout_weight="0.2"
+            android:layout_weight="0.25"
             android:layout_height="wrap_content"
-            android:text="Bid"/>
+            android:text="$10"/>
+
+        <Button
+            android:id="@+id/button_bid_mid"
+            android:layout_width="0dp"
+            android:layout_weight="0.25"
+            android:layout_height="wrap_content"
+            android:text="$25"/>
+        <Button
+            android:id="@+id/button_bid_high"
+            android:layout_width="0dp"
+            android:layout_weight="0.25"
+            android:layout_height="wrap_content"
+            android:text="$50"/>
+        <Button
+            android:id="@+id/button_bid_custom"
+            android:layout_width="0dp"
+            android:layout_weight="0.25"
+            android:layout_height="wrap_content"
+            android:text="custom"/>
 
     </LinearLayout>
 

@@ -2,6 +2,7 @@ package com.hubspot.auctionapp;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.IntegerRes;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -12,6 +13,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -49,7 +53,11 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
     // private TextView mNameView;
     // private TextView mDescriptionView;
 
-    private Button mBidButton;
+    private Button mBidButtonLow;
+    private Button mBidButtonMid;
+    private Button mBidButtonHigh;
+    private Button mBidButtonCustom;
+
     private RecyclerView mBidsRecycler;
 
 
@@ -73,10 +81,17 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
         // mNameView = (TextView) findViewById(R.id.item_detail_name);
         // mDescriptionView = (TextView) findViewById(R.id.item_detail_description);
 
-        mBidButton = (Button) findViewById(R.id.button_bid);
+        mBidButtonLow = (Button) findViewById(R.id.button_bid_low);
+        mBidButtonMid = (Button) findViewById(R.id.button_bid_mid);
+        mBidButtonHigh = (Button) findViewById(R.id.button_bid_high);
+        mBidButtonCustom = (Button) findViewById(R.id.button_bid_custom);
         mBidsRecycler = (RecyclerView) findViewById(R.id.recycler_bids);
 
-        mBidButton.setOnClickListener(this);
+        mBidButtonLow.setOnClickListener(this);
+        mBidButtonMid.setOnClickListener(this);
+        mBidButtonHigh.setOnClickListener(this);
+        mBidButtonCustom.setOnClickListener(this);
+
         mBidsRecycler.setLayoutManager(new LinearLayoutManager(this));
 
 
@@ -153,9 +168,65 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
     @Override
     public void onClick(View v) {
         int i = v.getId();
-        if (i == R.id.button_bid) {
-            submitBid();
+        if (i == R.id.button_bid_low) {
+            alertBid(10);
         }
+        if (i == R.id.button_bid_mid) {
+            alertBid(25);
+        }
+        if (i == R.id.button_bid_high) {
+            alertBid(50);
+        }
+        if (i == R.id.button_bid_custom) {
+            alertCustomBid();
+        }
+    }
+
+    private void alertBid(Integer amount) {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle("Submit bid?");
+        alertDialogBuilder
+                .setMessage("Bid $" + String.valueOf(amount) + " on Item 1?")
+                .setCancelable(false)
+                .setPositiveButton("OK",new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog,int id) {
+                        // if this button is clicked, close
+                        // current activity
+                        //MainActivity.this.finish();
+                        dialog.cancel();
+                    }
+                })
+                .setNegativeButton("No",new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog,int id) {
+                        // if this button is clicked, just close
+                        // the dialog box and do nothing
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
+    private void alertCustomBid() {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle("Custom bid");
+        alertDialogBuilder
+                .setMessage("Enter custom bid amount")
+                .setCancelable(false)
+                .setPositiveButton("OK",new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog,int id) {
+                        //MainActivity.this.finish();
+                        //dialog.cancel();
+                        alertBid(100);
+                    }
+                })
+                .setNegativeButton("No",new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog,int id) {
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
     }
 
     private void submitBid() {
