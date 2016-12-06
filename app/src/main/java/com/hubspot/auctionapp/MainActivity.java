@@ -19,6 +19,7 @@ import android.support.design.widget.TabLayout;
 
 import com.firebase.client.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.crash.FirebaseCrash;
 import com.google.firebase.database.FirebaseDatabase;
 import com.firebase.ui.database.FirebaseListAdapter;
 import com.google.firebase.database.DatabaseReference;
@@ -65,6 +66,7 @@ public class MainActivity extends BaseActivity {
       loadLogInView();
     }*/
 
+    //FirebaseCrash.report(new Exception("My first Android non-fatal error"));
     setContentView(R.layout.activity_main);
 
     // Create the adapter that will return a fragment for each section
