@@ -1,7 +1,10 @@
 package com.hubspot.auctionapp;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.text.SimpleDateFormat;
+
+import android.content.Intent;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.util.Log;
@@ -13,6 +16,8 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Color;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -20,15 +25,15 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-import com.firebase.client.FirebaseError;
 
 import com.hubspot.auctionapp.models.Item;
 import com.hubspot.auctionapp.models.Bid;
-import com.hubspot.auctionapp.models.User;
+import com.hubspot.auctionapp.models.ItemBid;
 
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ItemDetailActivity extends BaseActivity implements View.OnClickListener {
 
@@ -38,13 +43,16 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
 
     private Item mItem;
     private DatabaseReference mItemReference;
-    private DatabaseReference mBidsReference;
+    private DatabaseReference mItemBidsReference;
+    private DatabaseReference mUserBidsReference;
     private ValueEventListener mItemListener;
     private String mItemKey;
 
     private ArrayList<Bid> mWinningBids;
+    private Integer mWinningBid;
     private Boolean mUserIsWinning = false;
-    private Integer mMinBid = 100000;
+    private Boolean mUserIsOutbid = false;
+    private Integer mMinBid;
     private Integer mMinBidLow;
     private Integer mMinBidMid;
     private Integer mMinBidHigh;
@@ -74,171 +82,213 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
             throw new IllegalArgumentException("Must pass EXTRA_POST_KEY");
         }
 
-        mItemReference = FirebaseDatabase.getInstance().getReference().child("items").child(mItemKey);
-        mBidsReference = FirebaseDatabase.getInstance().getReference().child("item-bids").child(mItemKey);
+        // FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (false) { //(user == null) {
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+        } else {
+            mItemReference = FirebaseDatabase.getInstance().getReference().child("items").child(mItemKey);
+            mItemBidsReference = FirebaseDatabase.getInstance().getReference().child("item-bids").child(mItemKey);
+            //mUserBidsReference = FirebaseDatabase.getInstance().getReference().child("users").child(user.uid).child("item-bids").child(mItemKey);
+            mUserBidsReference = FirebaseDatabase.getInstance().getReference().child("users").child("yzRFnaAG26e5YviVhXz62BG3dZj2").child("item-bids").child(mItemKey);
 
-        mImageView = (ImageView) findViewById(R.id.item_image);
-        mNameView = (TextView) findViewById(R.id.item_detail_name);
-        mDonorView = (TextView) findViewById(R.id.item_detail_donorname);
-        mNumAvailableView = (TextView) findViewById(R.id.item_num_available);
-        mDescriptionView = (TextView) findViewById(R.id.item_detail_description);
+            mImageView = (ImageView) findViewById(R.id.item_image);
+            mNameView = (TextView) findViewById(R.id.item_detail_name);
+            mDonorView = (TextView) findViewById(R.id.item_detail_donorname);
+            mNumAvailableView = (TextView) findViewById(R.id.item_num_available);
+            mDescriptionView = (TextView) findViewById(R.id.item_detail_description);
 
-        mNumBidsView = (TextView) findViewById(R.id.num_bids);
-        mWinningBidsView = (TextView) findViewById(R.id.winning_bids);
-        mBiddingStatusView = (TextView) findViewById(R.id.bid_status);
+            mNumBidsView = (TextView) findViewById(R.id.num_bids);
+            mWinningBidsView = (TextView) findViewById(R.id.winning_bids);
+            mBiddingStatusView = (TextView) findViewById(R.id.bid_status);
 
-        mBidButtonLow = (Button) findViewById(R.id.button_bid_low);
-        mBidButtonMid = (Button) findViewById(R.id.button_bid_mid);
-        mBidButtonHigh = (Button) findViewById(R.id.button_bid_high);
-        mBidButtonCustom = (Button) findViewById(R.id.button_bid_custom);
+            mBidButtonLow = (Button) findViewById(R.id.button_bid_low);
+            mBidButtonMid = (Button) findViewById(R.id.button_bid_mid);
+            mBidButtonHigh = (Button) findViewById(R.id.button_bid_high);
+            mBidButtonCustom = (Button) findViewById(R.id.button_bid_custom);
 
-        mBidButtonLow.setOnClickListener(this);
-        mBidButtonMid.setOnClickListener(this);
-        mBidButtonHigh.setOnClickListener(this);
-        mBidButtonCustom.setOnClickListener(this);
+            mBidButtonLow.setOnClickListener(this);
+            mBidButtonMid.setOnClickListener(this);
+            mBidButtonHigh.setOnClickListener(this);
+            mBidButtonCustom.setOnClickListener(this);
+        }
     }
 
     @Override
     public void onStart() {
         super.onStart();
 
-        ValueEventListener itemListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                mItem = dataSnapshot.getValue(Item.class);
-                mNameView.setText(mItem.getName());
-                mDonorView.setText(mItem.getDonorname());
-                mNumAvailableView.setText(String.valueOf(mItem.getQty()) + " Available");
-                mDescriptionView.setText(mItem.getDescription());
+        // FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (false) { //(user == null) {
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+        } else {
+            ValueEventListener itemListener = new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    mItem = dataSnapshot.getValue(Item.class);
+                    mNameView.setText(mItem.getName());
+                    mDonorView.setText(mItem.getDonorname());
+                    mNumAvailableView.setText(String.valueOf(mItem.getQty()) + " Available");
+                    mDescriptionView.setText(mItem.getDescription());
 
-                Picasso.with(getBaseContext())
-                        .load(mItem.getImageurl())
-                        .placeholder(R.drawable.ic_item_image)
-                        .error(R.drawable.ic_item_image)
-                        .into(mImageView);
+                    Picasso.with(getBaseContext())
+                            .load(mItem.getImageurl())
+                            .placeholder(R.drawable.ic_item_image)
+                            .error(R.drawable.ic_item_image)
+                            .into(mImageView);
 
-                Integer numBids = mItem.getNumBids();
-                if (numBids == 0) {
-                    mNumBidsView.setText("SUGGESTED OPENING BID");
-                    mWinningBidsView.setText("$" + String.valueOf(mItem.openbid));
-                    mWinningBidsView.setTextColor(Color.parseColor("#425b76"));
-                    mMinBid = mItem.openbid;
-                    mMinBidLow = mMinBid + 1;
-                    mMinBidMid = mMinBid + 5;
-                    mMinBidHigh = mMinBid + 10;
-                    mBidButtonLow.setText("$" + mMinBidLow);
-                    mBidButtonMid.setText("$" + mMinBidMid);
-                    mBidButtonHigh.setText("$" + mMinBidHigh);
-                }
+                    Integer numBids = mItem.getNumBids();
+                    if (numBids == 0) {
+                        mNumBidsView.setText("SUGGESTED OPENING BID");
+                        mWinningBidsView.setText("$" + String.valueOf(mItem.openbid));
+                        mWinningBidsView.setTextColor(Color.parseColor("#425b76"));
+                        mMinBid = mItem.openbid;
+                        mMinBidLow = mMinBid + 1;
+                        mMinBidMid = mMinBid + 5;
+                        mMinBidHigh = mMinBid + 10;
+                        mBidButtonLow.setText("$" + mMinBidLow);
+                        mBidButtonMid.setText("$" + mMinBidMid);
+                        mBidButtonHigh.setText("$" + mMinBidHigh);
+                    }
 
-                mWinningBids = new ArrayList<>();
-                String mWinningBidsString = "";
-                Query winningBidsQuery = mBidsReference.limitToLast(mItem.getQty());
-                winningBidsQuery.addListenerForSingleValueEvent(
-                    new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            Log.e("Count ", "" + dataSnapshot.getChildrenCount());
-                            for (DataSnapshot bidSnapshot : dataSnapshot.getChildren()) {
-                                Bid bid = bidSnapshot.getValue(Bid.class);
-                                mWinningBids.add(bid);
-                            }
-                            if (mWinningBids.size() > 0) {
-
-                                // DO ANOTHER addListenerForSingleValueEvent here!
-
-                                String winningBidsString = "";
-                                for (Bid bid : mWinningBids) {
-                                    Log.d("MIN BID", String.valueOf(mMinBid));
-                                    Log.d("BID AMOUNT", String.valueOf(bid.amount));
-                                    if (mMinBid > bid.amount) { // set lowest in range
-                                        mMinBid = bid.amount;
+                    mWinningBids = new ArrayList<>();
+                    String mWinningBidsString = "";
+                    Query winningBidsQuery = mItemBidsReference.limitToLast(mItem.getQty());
+                    winningBidsQuery.addListenerForSingleValueEvent(
+                            new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    Log.e("Count ", "" + dataSnapshot.getChildrenCount());
+                                    for (DataSnapshot bidSnapshot : dataSnapshot.getChildren()) {
+                                        Bid bid = bidSnapshot.getValue(Bid.class);
+                                        mWinningBids.add(bid);
+                                        if (bid.user == getUid()) {
+                                            mUserIsWinning = true;
+                                            mWinningBid = bid.amount;
+                                        }
                                     }
-                                    winningBidsString = winningBidsString.concat("$" + String.valueOf(bid.amount) + " ");
+                                    if (mWinningBids.size() > 0) {
+
+                                        mUserBidsReference.addListenerForSingleValueEvent(
+                                                new ValueEventListener() {
+                                                    @Override
+                                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                                        if (dataSnapshot.getChildrenCount() > 0 && !mUserIsWinning) {
+                                                            mUserIsOutbid = true;
+                                                        }
+
+                                                        String winningBidsString = "";
+                                                        for (Bid bid : mWinningBids) {
+                                                            if (mMinBid == null || mMinBid > bid.amount) {
+                                                                mMinBid = bid.amount;
+                                                            }
+                                                            winningBidsString = winningBidsString.concat("$" + String.valueOf(bid.amount) + " ");
+                                                        }
+
+                                                        if (mUserIsWinning) {
+                                                            mNumBidsView.setText("NICE! YOUR BID OF $" + mWinningBid + " IS WINNING");
+                                                        } else if (mUserIsOutbid) {
+                                                            mNumBidsView.setText("YOU'VE BEEN OUTBID!");
+                                                        } else {
+                                                            mNumBidsView.setText("WINNING BIDS (" + String.valueOf(mWinningBids.size()) + " total bids)");
+                                                        }
+                                                        mNumBidsView.setText("WINNING BIDS (" + String.valueOf(mWinningBids.size()) + " total bids)");
+                                                        mWinningBidsView.setText(winningBidsString);
+
+
+                                                        List<Integer> mSuggestedBids = new ArrayList<>();
+                                                        if (mMinBid < 50) {
+                                                            mSuggestedBids.add(mMinBid + 1);
+                                                            mSuggestedBids.add(mMinBid + 5);
+                                                            mSuggestedBids.add(mMinBid + 10);
+                                                        } else if (mMinBid < 100) {
+                                                            mSuggestedBids.add(mMinBid + 5);
+                                                            mSuggestedBids.add(mMinBid + 10);
+                                                            mSuggestedBids.add(mMinBid + 25);
+                                                        } else {
+                                                            mSuggestedBids.add(mMinBid + 10);
+                                                            mSuggestedBids.add(mMinBid + 25);
+                                                            mSuggestedBids.add(mMinBid + 50);
+                                                        }
+
+                                                        mBidButtonLow.setText("$" + mSuggestedBids.get(0));
+                                                        mBidButtonMid.setText("$" + mSuggestedBids.get(1));
+                                                        mBidButtonHigh.setText("$" + mSuggestedBids.get(2));
+                                                    }
+
+                                                    @Override
+                                                    public void onCancelled(DatabaseError firebaseError) {
+                                                        Log.e("The read failed: ", firebaseError.getMessage());
+                                                    }
+                                                });
+
+                                    }
                                 }
 
-                                /*if (mUserIsWinning) {
-                                    mNumBidsView.setText("NICE! YOUR BID OF $" + String.valueOf(50) + " IS WINNING");
-                                } else if (userHasBid) {
-                                    mNumBidsView.setText("YOU'VE BEEN OUTBID!");
-                                } else {
-                                    mNumBidsView.setText("WINNING BIDS (" + String.valueOf(mWinningBids.size()) + " total bids)");
-                                }*/
-                                mNumBidsView.setText("WINNING BIDS (" + String.valueOf(mWinningBids.size()) + " total bids)");
-
-                                mWinningBidsView.setText(winningBidsString);
-                                mMinBidLow = mMinBid + 1;
-                                mMinBidMid = mMinBid + 5;
-                                mMinBidHigh = mMinBid + 10;
-                                mBidButtonLow.setText("$" + mMinBidLow);
-                                mBidButtonMid.setText("$" + mMinBidMid);
-                                mBidButtonHigh.setText("$" + mMinBidHigh);
+                                @Override
+                                public void onCancelled(DatabaseError firebaseError) {
+                                    Log.e("The read failed: ", firebaseError.getMessage());
+                                }
                             }
-                        }
-                        @Override
-                        public void onCancelled(DatabaseError firebaseError) {
-                            Log.e("The read failed: ", firebaseError.getMessage());
-                        }
-                    }
-                );
+                    );
 
-                Date now = new Date();
+                    Date now = new Date();
 
-                // SMOKE TEST DATA
-                // Date BIDDING_OPENS = new Date(1481036400000L); // "2016/12/6 10:00"
-                // Date BIDDING_CLOSES = new Date(1481065200000L); // "2016/12/6 18:00"
-                // Date LIVE_BIDDING_OPENS = new Date(1481054400000L); //"2016/12/6 15:00"
+                    // SMOKE TEST DATA
+                    // Date BIDDING_OPENS = new Date(1481043600000L); // "2016/12/6 12:00"
+                    Date BIDDING_OPENS = new Date(1480957200000L); // "2016/12/6 12:00"
+                    Date BIDDING_CLOSES = new Date(1481065200000L); // "2016/12/6 18:00"
+                    Date LIVE_BIDDING_OPENS = new Date(1481054400000L); //"2016/12/6 15:00"
 
-                // LIVE AUCTION DATA
-                // Date BIDDING_OPENS = new Date(1481292000000L); // "2016/12/9 9:00"
-                // Date BIDDING_CLOSES = new Date(1481763600000L); // "2016/12/14 20:00"
-                // Date LIVE_BIDDING_OPENS = new Date(1481752800000L); //"2016/12/14 17:00"
+                    // LIVE AUCTION DATA
+                    // Date BIDDING_OPENS = new Date(1481292000000L); // "2016/12/9 9:00"
+                    // Date BIDDING_CLOSES = new Date(1481763600000L); // "2016/12/14 20:00"
+                    // Date LIVE_BIDDING_OPENS = new Date(1481752800000L); //"2016/12/14 17:00"
 
-                Date BIDDING_OPENS = new Date(1478980800000L); // "2016/11/12 15:00"
-                Date BIDDING_CLOSES = new Date(1481763600000L); // "2016/12/14 20:00"
-                Date LIVE_BIDDING_OPENS = new Date(1481752800000L); //"2016/12/14 17:00"
+                    SimpleDateFormat sdf = new SimpleDateFormat("MM/dd HH:mm");
 
-                SimpleDateFormat sdf = new SimpleDateFormat("MM/dd HH:mm");
+                    Log.d("BIDDING_CLOSES", sdf.format(BIDDING_CLOSES));
+                    Log.d("BIDDING AVAILABLE", String.valueOf(now.before(BIDDING_CLOSES)));
 
-                Log.d("BIDDING_CLOSES", sdf.format(BIDDING_CLOSES));
-                Log.d("BIDDING AVAILABLE", String.valueOf(now.before(BIDDING_CLOSES)));
-
-                if (now.after(BIDDING_CLOSES)) {
-                    mBidButtonLow.setEnabled(false);
-                    mBidButtonMid.setEnabled(false);
-                    mBidButtonHigh.setEnabled(false);
-                    mBidButtonCustom.setEnabled(false);
-                    mBiddingStatusView.setText("SORRY, BIDDING HAS CLOSED");
-                } else if (mItem.getIslive()) {
-                    if (now.after(LIVE_BIDDING_OPENS)) {
-                        mBiddingStatusView.setText("BIDDING CLOSES " + sdf.format(BIDDING_CLOSES));
-                    } else {
+                    if (now.after(BIDDING_CLOSES)) {
                         mBidButtonLow.setEnabled(false);
                         mBidButtonMid.setEnabled(false);
                         mBidButtonHigh.setEnabled(false);
                         mBidButtonCustom.setEnabled(false);
-                        mBiddingStatusView.setText("BIDDING OPENS " + sdf.format(LIVE_BIDDING_OPENS));
-                    }
-                } else {
-                    if (now.after(BIDDING_OPENS)) {
-                        mBiddingStatusView.setText("BIDDING CLOSES " + sdf.format(BIDDING_CLOSES));
+                        mBiddingStatusView.setText("SORRY, BIDDING HAS CLOSED");
+                    } else if (mItem.getIslive()) {
+                        if (now.after(LIVE_BIDDING_OPENS)) {
+                            mBiddingStatusView.setText("BIDDING CLOSES " + sdf.format(BIDDING_CLOSES));
+                        } else {
+                            mBidButtonLow.setEnabled(false);
+                            mBidButtonMid.setEnabled(false);
+                            mBidButtonHigh.setEnabled(false);
+                            mBidButtonCustom.setEnabled(false);
+                            mBiddingStatusView.setText("BIDDING OPENS " + sdf.format(LIVE_BIDDING_OPENS));
+                        }
                     } else {
-                        mBidButtonLow.setEnabled(false);
-                        mBidButtonMid.setEnabled(false);
-                        mBidButtonHigh.setEnabled(false);
-                        mBidButtonCustom.setEnabled(false);
-                        mBiddingStatusView.setText("BIDDING OPENS " + sdf.format(LIVE_BIDDING_OPENS));
+                        if (now.after(BIDDING_OPENS)) {
+                            mBiddingStatusView.setText("BIDDING CLOSES " + sdf.format(BIDDING_CLOSES));
+                        } else {
+                            mBidButtonLow.setEnabled(false);
+                            mBidButtonMid.setEnabled(false);
+                            mBidButtonHigh.setEnabled(false);
+                            mBidButtonCustom.setEnabled(false);
+                            mBiddingStatusView.setText("BIDDING OPENS " + sdf.format(BIDDING_OPENS));
+                        }
                     }
                 }
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Log.w(TAG, "loadItem:onCancelled", databaseError.toException());
-            }
-        };
-        mItemReference.addValueEventListener(itemListener);
-        mItemListener = itemListener;
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Log.w(TAG, "loadItem:onCancelled", databaseError.toException());
+                }
+            };
+            mItemReference.addValueEventListener(itemListener);
+            mItemListener = itemListener;
+        }
     }
 
     @Override
@@ -284,36 +334,43 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
         }
     }*/
 
-    public void bidOn(Item item, Integer amount) {
-        //let user = FIRAuth.auth()?.currentUser;
+    public void submitBid(Integer amount) {
 
-        /*if let userEmail = user?.email {
-                let bidData = ["email": userEmail, "name": "A HubSpotter", "amount": 50, "item": 0] as [String : Any]
-                let postRef = self.ref.child("bids").childByAutoId()
-                let bidId = postRef.key
-                postRef.setValue(bidData)
-                self.ref.child("/items/" + item.id + "/bids/" + bidId).setValue(true)
-                // self.ref.child("/users/" + comment.author + "/bids/" + name).set(true);*/
+        // FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (true) { //(user != null) {
+            // Bid bid = new Bid("user.uid", amount, mItemKey);
+            // ItemBid itemBid = new Bid("user.uid", amount);
+            Bid bid = new Bid("yzRFnaAG26e5YviVhXz62BG3dZj2", amount);
+            ItemBid itemBid = new ItemBid("yzRFnaAG26e5YviVhXz62BG3dZj2", amount, mItemKey);
+
+            DatabaseReference postRef = FirebaseDatabase.getInstance().getReference().child("bids").push();
+            String bidId = postRef.getKey();
+            postRef.setValue(itemBid);
+
+            mItemReference.child("bids/" + bidId).setValue(true);
+            mItemBidsReference.child(bidId).setValue(bid);
+            mUserBidsReference.child(bidId).setValue(true);
+        } else {
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+        }
     }
 
-    private void alertBid(Integer amount) {
+    private void alertBid(final Integer amount) {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setTitle("Submit bid?");
         alertDialogBuilder
-                .setMessage("Bid $" + String.valueOf(amount) + " on Item 1?")
+                .setMessage("Bid $" + String.valueOf(amount) + " on Item " + mItemKey + "?")
                 .setCancelable(false)
-                .setPositiveButton("OK",new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog,int id) {
-                        // if this button is clicked, close
-                        // current activity
-                        //MainActivity.this.finish();
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        submitBid(amount);
                         dialog.cancel();
                     }
                 })
-                .setNegativeButton("No",new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog,int id) {
-                        // if this button is clicked, just close
-                        // the dialog box and do nothing
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
                         dialog.cancel();
                     }
                 });
@@ -327,47 +384,17 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
         alertDialogBuilder
                 .setMessage("Enter custom bid amount")
                 .setCancelable(false)
-                .setPositiveButton("OK",new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog,int id) {
-                        //MainActivity.this.finish();
-                        //dialog.cancel();
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
                         alertBid(100);
                     }
                 })
-                .setNegativeButton("No",new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog,int id) {
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
                         dialog.cancel();
                     }
                 });
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
-    }
-
-    private void submitBid() {
-        final String uid = getUid();
-        FirebaseDatabase.getInstance().getReference().child("users").child(uid)
-            .addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    // Get user information
-                    // User user = dataSnapshot.getValue(User.class);
-                    // String email = user.email;
-
-                    // Create new bid object
-                    // String commentText = mCommentField.getText().toString();
-                    Bid bid = new Bid(uid, 69);
-
-                    // Push the comment, it will appear in the list
-                    mBidsReference.push().setValue(bid);
-
-                    // Clear the field
-                    // mCommentField.setText(null);
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
     }
 }

@@ -42,8 +42,7 @@ public class MainActivity extends BaseActivity {
   private FirebaseAuth mFirebaseAuth;
   private FirebaseUser mFirebaseUser;
   private ListView mListView;
-  private FirebaseListAdapter<Item> mAdapter;
-  private BottomBar mBottomBar;*/
+  private FirebaseListAdapter<Item> mAdapter;*/
 
   private void loadLogInView() {
     Intent intent = new Intent(this, LoginActivity.class);
@@ -99,43 +98,6 @@ public class MainActivity extends BaseActivity {
     mViewPager.setAdapter(mPagerAdapter);
     TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
     tabLayout.setupWithViewPager(mViewPager);
-
-    /*mBottomBar = (BottomBar) findViewById(R.id.bottomBar);
-    mBottomBar.setOnTabSelectListener(new OnTabSelectListener() {
-      @Override
-      public void onTabSelected(@IdRes int tabId) {
-        switch (tabId) {
-          case R.id.tab_all_items:
-            //filter list
-            return true;
-          case R.id.tab_no_bids:
-            //filter list
-            return true;
-          case R.id.tab_my_bids:
-            //filter list
-            return true;
-          default:
-            return super.onTabSelected(tabId);
-        }
-      }
-    });*/
-
-    /*itemsRef = FirebaseDatabase.getInstance().getReference("items");
-
-    mListView = (ListView) findViewById(R.id.items_list_view);
-
-    mAdapter = new FirebaseListAdapter<Item>(this, Item.class, R.layout.list_item, itemsRef) {
-      @Override
-      protected void populateView(View view, Item item, int position) {
-        Picasso.with(view.getContext())
-                .load(item.getImageurl())
-                .placeholder(R.drawable.ic_item_image)
-                .error(R.drawable.ic_item_image)
-                .into((ImageView) view.findViewById(R.id.item_thumbnail));
-        ((TextView) view.findViewById(R.id.item_title)).setText(item.name);
-        ((TextView) view.findViewById(R.id.item_donorname)).setText(item.donorname);
-        ((TextView) view.findViewById(R.id.item_num_available)).setText(getString((R.string.num_available), String.valueOf(item.qty)));
-        ((TextView) view.findViewById(R.id.item_description)).setText(item.description);*/
   }
 
   @Override
@@ -165,24 +127,10 @@ public class MainActivity extends BaseActivity {
     View menuItemView = findViewById(R.id.menu_popup);
     PopupMenu popup = new PopupMenu(menuItemView.getContext(), menuItemView);
     popup.show();
-
-    /*@Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-      int i = item.getItemId();
-      if (i == R.id.action_logout) {
-        FirebaseAuth.getInstance().signOut();
-        startActivity(new Intent(this, SignInActivity.class));
-        finish();
-        return true;
-      } else {
-        return super.onOptionsItemSelected(item);
-      }
-    }*/
   }
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
-
     switch (item.getItemId()) {
       case R.id.menu_popup:
         showPopup();
@@ -196,5 +144,4 @@ public class MainActivity extends BaseActivity {
         return super.onOptionsItemSelected(item);
     }
   }
-
 }

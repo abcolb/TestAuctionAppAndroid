@@ -11,6 +11,7 @@
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
     <string name="error_login">Login error</string>
+    <string name="error_sign_up">Sign up error</string>
 
     <!-- Fragments -->
     <string name="heading_all_items">All Items</string>

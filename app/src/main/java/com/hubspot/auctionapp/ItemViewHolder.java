@@ -41,10 +41,21 @@ public class ItemViewHolder extends RecyclerView.ViewHolder {
         numAvailableView.setText(String.valueOf(item.getQty()) + " Available");
         descriptionView.setText(item.getDescription());
 
-
         //get bids once
         //get bid status
-        detailView.setText(item.getBidStatus());
+        detailView.setText(this.getBidStatus(item));
         //View.setOnClickListener(onClickListener);
+    }
+
+    public String getBidStatus(Item item) {
+        if (!item.getIsBiddingOpen()) {
+            return "";
+        } else if (false) {
+            return "OUTBID!";
+        } else if (false) {
+            return "WINNING";
+        } else {
+            return "BID NOW";
+        }
     }
 }

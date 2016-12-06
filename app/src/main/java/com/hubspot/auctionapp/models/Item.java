@@ -1,13 +1,18 @@
 package com.hubspot.auctionapp.models;
 
+import android.util.Log;
+
 import com.google.firebase.database.DatabaseReference;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Map;
 import java.util.HashMap;
 
 public class Item {
 
+  public String key;
   public String name;
   public Integer openbid;
   public String donoremail;
@@ -45,6 +50,7 @@ public class Item {
   }
 
   public Boolean getIslive() {
+    Log.d("IS LIVE", String.valueOf(islive == 1));
     return islive == 1;
   }
 
@@ -53,81 +59,29 @@ public class Item {
   }
 
   public Boolean getIsBiddingOpen() {
-    /*let formatter = DateFormatter()
-    formatter.dateFormat = "yyyy/MM/dd HH:mm"
+
     // SMOKE TEST DATA
-    // let BIDDING_OPENS = formatter.date(from: "2016/12/12 15:00")
-    // let BIDDING_CLOSES = formatter.date(from: "2016/12/14 20:00")
-    // let LIVE_BIDDING_OPENS = formatter.date(from: "2016/12/14 17:00")
+    // Date BIDDING_OPENS = new Date(1481043600000L); // "2016/12/6 12:00"
+    Date BIDDING_OPENS = new Date(1480957200000L); // "2016/12/6 12:00"
+    Date BIDDING_CLOSES = new Date(1481065200000L); // "2016/12/6 18:00"
+    Date LIVE_BIDDING_OPENS = new Date(1481054400000L); //"2016/12/6 15:00"
 
     // LIVE AUCTION DATA
-    // let BIDDING_OPENS = formatter.date(from: "2016/12/12 15:00")
-    // let BIDDING_CLOSES = formatter.date(from: "2016/12/14 20:00")
-    // let LIVE_BIDDING_OPENS = formatter.date(from: "2016/12/14 17:00")
+    // Date BIDDING_OPENS = new Date(1481292000000L); // "2016/12/9 9:00"
+    // Date BIDDING_CLOSES = new Date(1481763600000L); // "2016/12/14 20:00"
+    // Date LIVE_BIDDING_OPENS = new Date(1481752800000L); //"2016/12/14 17:00"
 
-    let BIDDING_OPENS = formatter.date(from: "2016/11/12 15:00")
-    let BIDDING_CLOSES = formatter.date(from: "2016/12/14 20:00")
-    let LIVE_BIDDING_OPENS = formatter.date(from: "2016/12/14 17:00")
-
-    let now = NSDate()
-
-    if (now.compare(BIDDING_CLOSES!) == ComparisonResult.orderedDescending) {
-      return false
-    }
-    if (isLive) {
-      if (now.compare(LIVE_BIDDING_OPENS!) != ComparisonResult.orderedDescending) {
-        return false
+    Date now = new Date();
+    if (now.after(BIDDING_CLOSES)) {
+      return false;
+    } else if (this.getIslive()) {
+      if (now.before(LIVE_BIDDING_OPENS)) {
+        return false;
       }
     } else {
-      if (now.compare(BIDDING_OPENS!) != ComparisonResult.orderedDescending) {
-        return false
+      if (now.before(BIDDING_OPENS)) {
+        return false;
       }
-    }
-    return true*/
-    return true;
+    } return true;
   }
-
-  public String getBidStatus() {
-    if (!this.getIsBiddingOpen()) {
-      return "";
-    } else if (false) {
-      return "OUTBID!";
-    } else if (true) {
-      return "WINNING";
-    } else {
-      return "BID NOW";
-    }
-  }
-
-  public String getBiddingTimelineString() {
-    return "BIDDING OPENS 12/12/2016";
-  }
-
-  public Integer getPrice() {
-    if (this.bids.size() > 0) {
-      return 500; // new Bid(bids.first).getAmount()
-    }
-    return this.openbid;
-  }
-
-  public String getBidSize() {
-    Integer currentPrice = this.getPrice();
-    if (currentPrice < 50) {
-      return "SMALL";
-    } else if (currentPrice < 100) {
-      return "MEDIUM";
-    } return "LARGE";
-  }
-
-  //public ArrayList<Integer> getIncrements() {
-
-  /*let BIDDING_INCREMENTS : [String: [Int]] = [
-  "SMALL": [1, 5, 10],
-  "MEDIUM": [5, 10, 25],
-  "LARGE": [10, 25, 50]
-  ] */
-
-  //let suggestedIncremements = BIDDING_INCREMENTS[this.getBidType()]
-  //return [priceIncrements![0] + self.getPrice(), priceIncrements![1] + self.getPrice(), priceIncrements![2] + self.getPrice()]
-
 }
