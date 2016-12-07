@@ -7,10 +7,13 @@ import java.text.SimpleDateFormat;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -49,13 +52,11 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
     private String mItemKey;
 
     private ArrayList<Bid> mWinningBids;
+    private List<Integer> mSuggestedBids = new ArrayList<>();
     private Integer mWinningBid;
     private Boolean mUserIsWinning = false;
     private Boolean mUserIsOutbid = false;
     private Integer mMinBid;
-    private Integer mMinBidLow;
-    private Integer mMinBidMid;
-    private Integer mMinBidHigh;
 
     private ImageView mImageView;
     private TextView mNameView;
@@ -144,12 +145,22 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
                         mWinningBidsView.setText("$" + String.valueOf(mItem.openbid));
                         mWinningBidsView.setTextColor(Color.parseColor("#425b76"));
                         mMinBid = mItem.openbid;
-                        mMinBidLow = mMinBid + 1;
-                        mMinBidMid = mMinBid + 5;
-                        mMinBidHigh = mMinBid + 10;
-                        mBidButtonLow.setText("$" + mMinBidLow);
-                        mBidButtonMid.setText("$" + mMinBidMid);
-                        mBidButtonHigh.setText("$" + mMinBidHigh);
+                        if (mMinBid < 50) {
+                            mSuggestedBids.add(mMinBid + 1);
+                            mSuggestedBids.add(mMinBid + 5);
+                            mSuggestedBids.add(mMinBid + 10);
+                        } else if (mMinBid < 100) {
+                            mSuggestedBids.add(mMinBid + 5);
+                            mSuggestedBids.add(mMinBid + 10);
+                            mSuggestedBids.add(mMinBid + 25);
+                        } else {
+                            mSuggestedBids.add(mMinBid + 10);
+                            mSuggestedBids.add(mMinBid + 25);
+                            mSuggestedBids.add(mMinBid + 50);
+                        }
+                        mBidButtonLow.setText("$" + mSuggestedBids.get(0));
+                        mBidButtonMid.setText("$" + mSuggestedBids.get(1));
+                        mBidButtonHigh.setText("$" + mSuggestedBids.get(2));
                     }
 
                     mWinningBids = new ArrayList<>();
@@ -163,7 +174,7 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
                                     for (DataSnapshot bidSnapshot : dataSnapshot.getChildren()) {
                                         Bid bid = bidSnapshot.getValue(Bid.class);
                                         mWinningBids.add(bid);
-                                        if (bid.user == getUid()) {
+                                        if (bid.user.equals(getUid())) {
                                             mUserIsWinning = true;
                                             mWinningBid = bid.amount;
                                         }
@@ -187,17 +198,19 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
                                                         }
 
                                                         if (mUserIsWinning) {
-                                                            mNumBidsView.setText("NICE! YOUR BID OF $" + mWinningBid + " IS WINNING");
+                                                            if (mItem.getQty() > 1) {
+                                                                mNumBidsView.setText("NICE! YOUR BID IS WINNING");
+                                                            } else {
+                                                                mNumBidsView.setText("NICE! YOUR BID OF $" + mWinningBid + " IS WINNING");
+                                                            }
                                                         } else if (mUserIsOutbid) {
                                                             mNumBidsView.setText("YOU'VE BEEN OUTBID!");
                                                         } else {
-                                                            mNumBidsView.setText("WINNING BIDS (" + String.valueOf(mWinningBids.size()) + " total bids)");
+                                                            mNumBidsView.setText("WINNING BIDS (" + String.valueOf(mItem.bids.size()) + " total bids)");
                                                         }
-                                                        mNumBidsView.setText("WINNING BIDS (" + String.valueOf(mWinningBids.size()) + " total bids)");
                                                         mWinningBidsView.setText(winningBidsString);
+                                                        mWinningBidsView.setTextColor(Color.parseColor("#ff8f59"));
 
-
-                                                        List<Integer> mSuggestedBids = new ArrayList<>();
                                                         if (mMinBid < 50) {
                                                             mSuggestedBids.add(mMinBid + 1);
                                                             mSuggestedBids.add(mMinBid + 5);
@@ -236,10 +249,10 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
                     Date now = new Date();
 
                     // SMOKE TEST DATA
-                    // Date BIDDING_OPENS = new Date(1481043600000L); // "2016/12/6 12:00"
-                    Date BIDDING_OPENS = new Date(1480957200000L); // "2016/12/6 12:00"
-                    Date BIDDING_CLOSES = new Date(1481065200000L); // "2016/12/6 18:00"
-                    Date LIVE_BIDDING_OPENS = new Date(1481054400000L); //"2016/12/6 15:00"
+                    // Date BIDDING_OPENS = new Date(1481130000000L); // "2016/12/6 12:00"
+                    Date BIDDING_OPENS = new Date(1480957200000L); // "2016/12/7 12:00"
+                    Date BIDDING_CLOSES = new Date(1481151600000L); // "2016/12/7 18:00"
+                    Date LIVE_BIDDING_OPENS = new Date(1481140800000L); //"2016/12/7 15:00"
 
                     // LIVE AUCTION DATA
                     // Date BIDDING_OPENS = new Date(1481292000000L); // "2016/12/9 9:00"
@@ -304,13 +317,13 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
     public void onClick(View v) {
         int i = v.getId();
         if (i == R.id.button_bid_low) {
-            alertBid(mMinBidLow);
+            alertBid(mSuggestedBids.get(0));
         }
         if (i == R.id.button_bid_mid) {
-            alertBid(mMinBidMid);
+            alertBid(mSuggestedBids.get(1));
         }
         if (i == R.id.button_bid_high) {
-            alertBid(mMinBidHigh);
+            alertBid(mSuggestedBids.get(2));
         }
         if (i == R.id.button_bid_custom) {
             alertCustomBid();
@@ -361,7 +374,7 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setTitle("Submit bid?");
         alertDialogBuilder
-                .setMessage("Bid $" + String.valueOf(amount) + " on Item " + mItemKey + "?")
+                .setMessage("Bid $" + String.valueOf(amount) + " on Item " + mItem.getName() + "?")
                 .setCancelable(false)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
@@ -380,13 +393,23 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
 
     private void alertCustomBid() {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-        alertDialogBuilder.setTitle("Custom bid");
+
+        LinearLayout layout = new LinearLayout(ItemDetailActivity.this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+
+        final EditText customBidBox = new EditText(ItemDetailActivity.this);
+        customBidBox.setHint("Enter a bid greater than $" + mMinBid);
+        customBidBox.setInputType(InputType.TYPE_CLASS_NUMBER);
+        layout.addView(customBidBox);
+
         alertDialogBuilder
+                .setView(layout)
+                .setTitle("Custom bid")
                 .setMessage("Enter custom bid amount")
                 .setCancelable(false)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        alertBid(100);
+                        alertBid(Integer.parseInt(customBidBox.getText().toString()));
                     }
                 })
                 .setNegativeButton("No", new DialogInterface.OnClickListener() {

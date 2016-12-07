@@ -103,10 +103,10 @@ public class MainActivity extends BaseActivity {
   @Override
   public boolean onCreateOptionsMenu(Menu menu){
     MenuInflater inflater = getMenuInflater();
-    inflater.inflate(R.menu.menu_search, menu);
+    //inflater.inflate(R.menu.menu_search, menu);
     inflater.inflate(R.menu.menu_popup, menu);
 
-    MenuItem item = menu.findItem(R.id.menuSearch);
+    /*MenuItem item = menu.findItem(R.id.menuSearch);
     SearchView searchView = (SearchView)item.getActionView();
     searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
       @Override
@@ -119,7 +119,7 @@ public class MainActivity extends BaseActivity {
         //mAdapter.getFilter().filter(newText);
         return false;
       }
-    });
+    });*/
     return super.onCreateOptionsMenu(menu);
   }
 
