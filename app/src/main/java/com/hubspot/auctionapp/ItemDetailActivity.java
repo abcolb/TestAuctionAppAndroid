@@ -52,7 +52,7 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
     private String mItemKey;
 
     private ArrayList<Bid> mWinningBids;
-    private List<Integer> mSuggestedBids = new ArrayList<>();
+    private List<Integer> mSuggestedBids;
     private Integer mWinningBid;
     private Boolean mUserIsWinning = false;
     private Boolean mUserIsOutbid = false;
@@ -140,6 +140,8 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
                             .into(mImageView);
 
                     Integer numBids = mItem.getNumBids();
+                    mSuggestedBids = new ArrayList<>();
+                    mMinBid = null;
                     if (numBids == 0) {
                         mNumBidsView.setText("SUGGESTED OPENING BID");
                         mWinningBidsView.setText("$" + String.valueOf(mItem.openbid));
@@ -329,23 +331,6 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
             alertCustomBid();
         }
     }
-
-    public Boolean getIsUserWinning() {
-        //item.bids.first.email == user.email)
-        return true; // move to ItemDetailActivity
-    }
-
-    /*public String getBidStatus() {
-        if (!mItem.getIsBiddingOpen()) {
-            return "";
-        } else if (m) {
-            return "OUTBID!";
-        } else if (getIsUserWinning()) {
-            return "WINNING";
-        } else {
-            return "BID NOW";
-        }
-    }*/
 
     public void submitBid(Integer amount) {
 

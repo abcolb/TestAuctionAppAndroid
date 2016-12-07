@@ -30,7 +30,7 @@ public class ItemViewHolder extends RecyclerView.ViewHolder {
         detailView = (TextView) itemView.findViewById(R.id.item_detail);
     }
 
-    public void bindToItem(Item item, View.OnClickListener onClickListener) {
+    public void bindToItem(Item item) {
         nameView.setText(item.getName());
         donornameView.setText(item.getDonorname());
         Picasso.with(mItemView.getContext())
@@ -40,22 +40,6 @@ public class ItemViewHolder extends RecyclerView.ViewHolder {
             .into(imageView);
         numAvailableView.setText(String.valueOf(item.getQty()) + " Available");
         descriptionView.setText(item.getDescription());
-
-        //get bids once
-        //get bid status
-        detailView.setText(this.getBidStatus(item));
-        //View.setOnClickListener(onClickListener);
     }
 
-    public String getBidStatus(Item item) {
-        if (!item.getIsBiddingOpen()) {
-            return "";
-        } else if (false) {
-            return "OUTBID!";
-        } else if (false) {
-            return "WINNING";
-        } else {
-            return "BID NOW";
-        }
-    }
 }

@@ -6,4 +6,6 @@
   <color name="colorBackground">#f9fbfd</color>
   <color name="colorItemBackground">#ffffff</color>
   <color name="colorSecondary">#00a4bd</color>
+  <color name="colorWinning">#f2547d</color>
+  <color name="colorOutbid">#f2545b</color>
 </resources>

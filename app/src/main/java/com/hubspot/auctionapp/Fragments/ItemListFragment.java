@@ -1,6 +1,7 @@
 package com.hubspot.auctionapp.fragments;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -9,17 +10,25 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.util.Log;
+import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 
+import com.google.firebase.database.ValueEventListener;
 import com.hubspot.auctionapp.R;
+import com.hubspot.auctionapp.models.Bid;
 import com.hubspot.auctionapp.models.Item;
 import com.hubspot.auctionapp.ItemViewHolder;
 import com.hubspot.auctionapp.ItemDetailActivity;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public abstract class ItemListFragment extends Fragment {
 
@@ -29,6 +38,11 @@ public abstract class ItemListFragment extends Fragment {
     private FirebaseRecyclerAdapter<Item, ItemViewHolder> mAdapter;
     private RecyclerView mRecycler;
     private LinearLayoutManager mManager;
+    private DatabaseReference mItemReference;
+    private DatabaseReference mItemBidsReference;
+    private DatabaseReference mUserBidsReference;
+    private boolean mUserIsWinning;
+    private boolean mUserIsOutbid;
 
     public ItemListFragment() {}
 
@@ -39,6 +53,7 @@ public abstract class ItemListFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_all_items, container, false);
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
+
         Log.d("DATABASE", String.valueOf(mDatabase));
         mRecycler = (RecyclerView) rootView.findViewById(R.id.items_list);
         mRecycler.setHasFixedSize(true);
@@ -62,10 +77,13 @@ public abstract class ItemListFragment extends Fragment {
                 ItemViewHolder.class, itemsQuery) {
             @Override
             protected void populateViewHolder(final ItemViewHolder viewHolder, final Item model, final int position) {
-                final DatabaseReference itemRef = getRef(position);
 
-                final String itemKey = itemRef.getKey();
-                Log.d("ITEM KEY", itemKey);
+                mItemReference = getRef(position);
+                final String itemKey = mItemReference.getKey();
+                mItemBidsReference = mDatabase.child("item-bids").child(itemKey);
+                //mUserBidsReference = mDatabase.child("users").child(user.uid).child("item-bids").child(mItemKey);
+                mUserBidsReference = mDatabase.child("users").child("yzRFnaAG26e5YviVhXz62BG3dZj2").child("item-bids").child(itemKey);
+
                 viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -74,63 +92,81 @@ public abstract class ItemListFragment extends Fragment {
                         startActivity(intent);
                     }
                 });
+                viewHolder.bindToItem(model);
 
-                // Determine if the current user has liked this post and set UI accordingly
-                /*if (model.stars.containsKey(getUid())) {
-                    viewHolder.starView.setImageResource(R.drawable.ic_toggle_star_24);
-                } else {
-                    viewHolder.starView.setImageResource(R.drawable.ic_toggle_star_outline_24);
-                }*/
+                mUserIsOutbid = false;
+                mUserIsWinning = false;
+                // init winning bids
 
-                viewHolder.bindToItem(model, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View bidView) {
-                        // Need to write to both places the post is stored
-                        // DatabaseReference globalBidsRef = mDatabase.child("bids").child(itemRef.getKey());
-                        // DatabaseReference userPostRef = mDatabase.child("user-posts").child(model.uid).child(postRef.getKey());
+                Query winningBidsQuery = mItemBidsReference.limitToLast(model.getQty());
+                winningBidsQuery.addListenerForSingleValueEvent(
+                        new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                Log.e("Count ", "" + dataSnapshot.getChildrenCount());
+                                for (DataSnapshot bidSnapshot : dataSnapshot.getChildren()) {
+                                    Bid bid = bidSnapshot.getValue(Bid.class);
+                                    if (bid.user.equals(getUid())) {
+                                        mUserIsWinning = true;
+                                    }
+                                }
+                                if (dataSnapshot.getChildrenCount() > 0) {
+                                    mUserBidsReference.addListenerForSingleValueEvent(
+                                            new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                                    if (dataSnapshot.getChildrenCount() > 0 && !mUserIsWinning) {
+                                                        mUserIsOutbid = true;
+                                                    }
+                                                    setBidStatus(model, viewHolder.detailView);
+                                                }
+                                                @Override
+                                                public void onCancelled(DatabaseError firebaseError) {
+                                                    Log.e("The read failed: ", firebaseError.getMessage());
+                                                }
+                                            });
+                                } else {
+                                    setBidStatus(model, viewHolder.detailView);
+                                }
+                            }
 
-                        // Run two transactions
-                        // onBidClicked(globalBidsRef);
-                        // onBidClicked(userPostRef);
-                    }
-                });
+                            @Override
+                            public void onCancelled(DatabaseError firebaseError) {
+                                Log.e("The read failed: ", firebaseError.getMessage());
+                            }
+                        }
+                );
+            }
+
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w(TAG, "loadItem:onCancelled", databaseError.toException());
             }
         };
+        // mItemReference.addValueEventListener(itemListener);
+        // mItemListener = itemListener;
         mRecycler.setAdapter(mAdapter);
     }
 
-    /*private void onStarClicked(DatabaseReference postRef) {
-        postRef.runTransaction(new Transaction.Handler() {
-            @Override
-            public Transaction.Result doTransaction(MutableData mutableData) {
-                Post p = mutableData.getValue(Post.class);
-                if (p == null) {
-                    return Transaction.success(mutableData);
-                }
-
-                if (p.stars.containsKey(getUid())) {
-                    // Unstar the post and remove self from stars
-                    p.starCount = p.starCount - 1;
-                    p.stars.remove(getUid());
+    public void setBidStatus(Item item, TextView view) {
+        if (!item.getIsBiddingOpen()){
+            view.setText("");
+        } else {
+            if (mUserIsWinning){
+                view.setText("WINNING");
+                view.setTextColor(Color.parseColor("#f2547d"));
+            } else {
+                if (mUserIsOutbid) {
+                    view.setText("OUTBID!");
+                    view.setTextColor(Color.parseColor("#f2545b"));
                 } else {
-                    // Star the post and add self to stars
-                    p.starCount = p.starCount + 1;
-                    p.stars.put(getUid(), true);
+                    view.setText("BID NOW");
+                    view.setTextColor(Color.parseColor("#ff8f59"));
                 }
-
-                // Set value and report transaction success
-                mutableData.setValue(p);
-                return Transaction.success(mutableData);
             }
-
-            @Override
-            public void onComplete(DatabaseError databaseError, boolean b,
-                                   DataSnapshot dataSnapshot) {
-                // Transaction completed
-                Log.d(TAG, "postTransaction:onComplete:" + databaseError);
-            }
-        });
-    }*/
+        }
+    }
 
     @Override
     public void onDestroy() {
@@ -141,7 +177,7 @@ public abstract class ItemListFragment extends Fragment {
     }
 
     public String getUid() {
-        return "5"; //FirebaseAuth.getInstance().getCurrentUser().getUid();
+        return "yzRFnaAG26e5YviVhXz62BG3dZj2"; //FirebaseAuth.getInstance().getCurrentUser().getUid();
     }
 
     public abstract Query getQuery(DatabaseReference databaseReference);
