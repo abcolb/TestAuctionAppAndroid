@@ -251,10 +251,10 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
                     Date now = new Date();
 
                     // SMOKE TEST DATA
-                    // Date BIDDING_OPENS = new Date(1481130000000L); // "2016/12/6 12:00"
-                    Date BIDDING_OPENS = new Date(1480957200000L); // "2016/12/7 12:00"
-                    Date BIDDING_CLOSES = new Date(1481151600000L); // "2016/12/7 18:00"
-                    Date LIVE_BIDDING_OPENS = new Date(1481140800000L); //"2016/12/7 15:00"
+                    // Date BIDDING_OPENS = new Date(1481302800000L); // "2016/12/9 12:00"
+                    Date BIDDING_OPENS = new Date(1480957200000L); // "2016/12/9 12:00"
+                    Date BIDDING_CLOSES = new Date(1481317200000L); // "2016/12/9 16:00"
+                    Date LIVE_BIDDING_OPENS = new Date(1481313600000L); //"2016/12/9 15:00"
 
                     // LIVE AUCTION DATA
                     // Date BIDDING_OPENS = new Date(1481292000000L); // "2016/12/9 9:00"
