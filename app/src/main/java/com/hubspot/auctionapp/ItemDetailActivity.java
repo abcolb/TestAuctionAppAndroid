@@ -53,7 +53,7 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
 
     private ArrayList<Bid> mWinningBids;
     private List<Integer> mSuggestedBids;
-    private Integer mWinningBid;
+    private ArrayList<Bid> mUserWinningBids;
     private Boolean mUserIsWinning = false;
     private Boolean mUserIsOutbid = false;
     private Integer mMinBid;
@@ -166,6 +166,7 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
                     }
 
                     mWinningBids = new ArrayList<>();
+                    mUserWinningBids = new ArrayList<>();
                     String mWinningBidsString = "";
                     Query winningBidsQuery = mItemBidsReference.limitToLast(mItem.getQty());
                     winningBidsQuery.addListenerForSingleValueEvent(
@@ -178,7 +179,7 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
                                         mWinningBids.add(bid);
                                         if (bid.user.equals(getUid())) {
                                             mUserIsWinning = true;
-                                            mWinningBid = bid.amount;
+                                            mUserWinningBids.add(bid);
                                         }
                                     }
                                     if (mWinningBids.size() > 0) {
@@ -199,11 +200,16 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
                                                             winningBidsString = winningBidsString.concat("$" + String.valueOf(bid.amount) + " ");
                                                         }
 
+                                                        String winningUserBidsString = "";
+                                                        for (Bid bid : mUserWinningBids) {
+                                                            winningUserBidsString = winningUserBidsString.concat("$" + String.valueOf(bid.amount) + " ");
+                                                        }
+
                                                         if (mUserIsWinning) {
-                                                            if (mItem.getQty() > 1) {
-                                                                mNumBidsView.setText("NICE! YOUR BID IS WINNING");
+                                                            if (mUserWinningBids.size() > 1) {
+                                                                mNumBidsView.setText("NICE! YOUR BIDS ARE WINNING:" + winningUserBidsString);
                                                             } else {
-                                                                mNumBidsView.setText("NICE! YOUR BID OF $" + mWinningBid + " IS WINNING");
+                                                                mNumBidsView.setText("NICE! YOUR BID OF $" + mUserWinningBids.get(0).amount.toString() + " IS WINNING");
                                                             }
                                                         } else if (mUserIsOutbid) {
                                                             mNumBidsView.setText("YOU'VE BEEN OUTBID!");
@@ -250,15 +256,10 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
 
                     Date now = new Date();
 
-                    // SMOKE TEST DATA
-                    Date BIDDING_OPENS = new Date(1480957200000L); // "2016/12/5 12:00"
-                    Date BIDDING_CLOSES = new Date(1481317200000L); // "2016/12/9 16:00"
-                    Date LIVE_BIDDING_OPENS = new Date(1481313600000L); //"2016/12/9 15:00"
-
-                    // LIVE AUCTION DATA
-                    // Date BIDDING_OPENS = new Date(1481292000000L); // "2016/12/9 9:00"
-                    // Date BIDDING_CLOSES = new Date(1481763600000L); // "2016/12/14 20:00"
-                    // Date LIVE_BIDDING_OPENS = new Date(1481752800000L); //"2016/12/14 17:00"
+                    // Date BIDDING_OPENS = new Date(1481648400000L); // "2016/12/13 12:00"
+                    Date BIDDING_OPENS = new Date(1481475600000L); // "2016/12/11 12:00"
+                    Date BIDDING_CLOSES = new Date(1481760000000L); // "2016/12/14 19:00"
+                    Date LIVE_BIDDING_OPENS = new Date(1481752800000L); //"2016/12/14 17:00"
 
                     SimpleDateFormat sdf = new SimpleDateFormat("MM/dd HH:mm");
 
@@ -272,13 +273,13 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
                         mBidButtonCustom.setEnabled(false);
                         mBiddingStatusView.setText("SORRY, BIDDING HAS CLOSED");
                     } else if (mItem.getIslive()) {
+                        mBidButtonLow.setEnabled(false);
+                        mBidButtonMid.setEnabled(false);
+                        mBidButtonHigh.setEnabled(false);
+                        mBidButtonCustom.setEnabled(false);
                         if (now.after(LIVE_BIDDING_OPENS)) {
                             mBiddingStatusView.setText("BIDDING CLOSES " + sdf.format(BIDDING_CLOSES));
                         } else {
-                            mBidButtonLow.setEnabled(false);
-                            mBidButtonMid.setEnabled(false);
-                            mBidButtonHigh.setEnabled(false);
-                            mBidButtonCustom.setEnabled(false);
                             mBiddingStatusView.setText("BIDDING OPENS " + sdf.format(LIVE_BIDDING_OPENS));
                         }
                     } else {
@@ -293,7 +294,6 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
                         }
                     }
                 }
-
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {

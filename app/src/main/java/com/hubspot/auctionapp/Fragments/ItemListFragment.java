@@ -28,6 +28,7 @@ import com.hubspot.auctionapp.ItemViewHolder;
 import com.hubspot.auctionapp.ItemDetailActivity;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 public abstract class ItemListFragment extends Fragment {
@@ -41,8 +42,6 @@ public abstract class ItemListFragment extends Fragment {
     private DatabaseReference mItemReference;
     private DatabaseReference mItemBidsReference;
     private DatabaseReference mUserBidsReference;
-    private boolean mUserIsWinning;
-    private boolean mUserIsOutbid;
 
     public ItemListFragment() {}
 
@@ -54,7 +53,6 @@ public abstract class ItemListFragment extends Fragment {
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
-        Log.d("DATABASE", String.valueOf(mDatabase));
         mRecycler = (RecyclerView) rootView.findViewById(R.id.items_list);
         mRecycler.setHasFixedSize(true);
 
@@ -92,33 +90,56 @@ public abstract class ItemListFragment extends Fragment {
                         startActivity(intent);
                     }
                 });
+
+                if (model.getIsBiddingOpen() == false){
+                    viewHolder.detailView.setText("");
+                } else {
+                    viewHolder.detailView.setText("BID NOW");
+                    viewHolder.detailView.setTextColor(Color.parseColor("#ff8f59"));
+                }
                 viewHolder.bindToItem(model);
 
-                mUserIsOutbid = false;
-                mUserIsWinning = false;
-                // init winning bids
-
-                Query winningBidsQuery = mItemBidsReference.limitToLast(model.getQty());
+                /*Query winningBidsQuery = mItemBidsReference.limitToLast(model.getQty());
                 winningBidsQuery.addListenerForSingleValueEvent(
                         new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
-                                Log.e("Count ", "" + dataSnapshot.getChildrenCount());
+
+                                Boolean mUserIsWinning = false;
                                 for (DataSnapshot bidSnapshot : dataSnapshot.getChildren()) {
                                     Bid bid = bidSnapshot.getValue(Bid.class);
-                                    if (bid.user.equals(getUid())) {
+                                    //Log.d("BID", "" + bid.user.toString());
+                                    //Log.d("USER", "" + getUid());
+                                    if (bid.user.equals(getUid()) == true) {
+                                        Log.d("SET USER IS WINNING", "" + bid.user.equals(getUid()));
                                         mUserIsWinning = true;
                                     }
                                 }
-                                if (dataSnapshot.getChildrenCount() > 0) {
+                                Log.d("FIRST SNAP", "" + dataSnapshot.getChildrenCount());
+                                if (dataSnapshot.exists() && dataSnapshot.getValue() != null) {
+                                    final Boolean finalMUserIsWinning = mUserIsWinning;
                                     mUserBidsReference.addListenerForSingleValueEvent(
                                             new ValueEventListener() {
                                                 @Override
                                                 public void onDataChange(DataSnapshot dataSnapshot) {
-                                                    if (dataSnapshot.getChildrenCount() > 0 && !mUserIsWinning) {
-                                                        mUserIsOutbid = true;
+                                                    if (dataSnapshot.getValue() == null) {
+                                                        if (model.getIsBiddingOpen() == false) {
+                                                            viewHolder.detailView.setText("");
+                                                        } else {
+                                                            viewHolder.detailView.setText("BID NOW");
+                                                            viewHolder.detailView.setTextColor(Color.parseColor("#ff8f59"));
+                                                        }
+                                                    } else {
+                                                        if (dataSnapshot.getChildrenCount() > 0 && finalMUserIsWinning == false) {
+                                                            Log.d("SET USER IS OUTBID", dataSnapshot.toString());
+                                                            viewHolder.detailView.setText("OUTBID!");
+                                                            viewHolder.detailView.setTextColor(Color.parseColor("#f2545b"));
+                                                        } else {
+                                                            viewHolder.detailView.setText("WINNING");
+                                                            viewHolder.detailView.setTextColor(Color.parseColor("#00a4bd"));
+                                                        }
                                                     }
-                                                    setBidStatus(model, viewHolder.detailView);
+                                                    viewHolder.bindToItem(model);
                                                 }
                                                 @Override
                                                 public void onCancelled(DatabaseError firebaseError) {
@@ -126,7 +147,13 @@ public abstract class ItemListFragment extends Fragment {
                                                 }
                                             });
                                 } else {
-                                    setBidStatus(model, viewHolder.detailView);
+                                    if (model.getIsBiddingOpen() == false){
+                                        viewHolder.detailView.setText("");
+                                    } else {
+                                        viewHolder.detailView.setText("BID NOW");
+                                        viewHolder.detailView.setTextColor(Color.parseColor("#ff8f59"));
+                                    }
+                                    viewHolder.bindToItem(model);
                                 }
                             }
 
@@ -135,7 +162,7 @@ public abstract class ItemListFragment extends Fragment {
                                 Log.e("The read failed: ", firebaseError.getMessage());
                             }
                         }
-                );
+                );*/
             }
 
 
@@ -147,25 +174,6 @@ public abstract class ItemListFragment extends Fragment {
         // mItemReference.addValueEventListener(itemListener);
         // mItemListener = itemListener;
         mRecycler.setAdapter(mAdapter);
-    }
-
-    public void setBidStatus(Item item, TextView view) {
-        if (!item.getIsBiddingOpen()){
-            view.setText("");
-        } else {
-            if (mUserIsWinning){
-                view.setText("WINNING");
-                view.setTextColor(Color.parseColor("#f2547d"));
-            } else {
-                if (mUserIsOutbid) {
-                    view.setText("OUTBID!");
-                    view.setTextColor(Color.parseColor("#f2545b"));
-                } else {
-                    view.setText("BID NOW");
-                    view.setTextColor(Color.parseColor("#ff8f59"));
-                }
-            }
-        }
     }
 
     @Override

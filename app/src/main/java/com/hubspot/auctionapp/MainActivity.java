@@ -72,13 +72,11 @@ public class MainActivity extends BaseActivity {
     mPagerAdapter = new FragmentPagerAdapter(getSupportFragmentManager()) {
       private final Fragment[] mFragments = new Fragment[] {
               new AllItemsFragment(),
-              new NoBidsFragment(),
-              new MyBidsFragment(),
+              new NoBidsFragment()
       };
       private final String[] mFragmentNames = new String[] {
               getString(R.string.heading_all_items),
-              getString(R.string.heading_no_bids),
-              getString(R.string.heading_my_bids)
+              getString(R.string.heading_no_bids)
       };
       @Override
       public Fragment getItem(int position) {

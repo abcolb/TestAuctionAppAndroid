@@ -50,7 +50,6 @@ public class Item {
   }
 
   public Boolean getIslive() {
-    Log.d("IS LIVE", String.valueOf(islive == 1));
     return islive == 1;
   }
 
@@ -60,24 +59,16 @@ public class Item {
 
   public Boolean getIsBiddingOpen() {
 
-    // SMOKE TEST DATA
-
-    Date BIDDING_OPENS = new Date(1480957200000L); // "2016/12/5 12:00"
-    Date BIDDING_CLOSES = new Date(1481317200000L); // "2016/12/9 16:00"
-    Date LIVE_BIDDING_OPENS = new Date(1481313600000L); //"2016/12/9 15:00"
-
-    // LIVE AUCTION DATA
-    // Date BIDDING_OPENS = new Date(1481292000000L); // "2016/12/9 9:00"
-    // Date BIDDING_CLOSES = new Date(1481763600000L); // "2016/12/14 20:00"
-    // Date LIVE_BIDDING_OPENS = new Date(1481752800000L); //"2016/12/14 17:00"
+    // Date BIDDING_OPENS = new Date(1481648400000L); // "2016/12/13 12:00"
+    Date BIDDING_OPENS = new Date(1481475600000L); // "2016/12/11 12:00"
+    Date BIDDING_CLOSES = new Date(1481760000000L); // "2016/12/14 19:00"
+    Date LIVE_BIDDING_OPENS = new Date(1481752800000L); //"2016/12/14 17:00"
 
     Date now = new Date();
     if (now.after(BIDDING_CLOSES)) {
       return false;
     } else if (this.getIslive()) {
-      if (now.before(LIVE_BIDDING_OPENS)) {
-        return false;
-      }
+      return false;
     } else {
       if (now.before(BIDDING_OPENS)) {
         return false;
