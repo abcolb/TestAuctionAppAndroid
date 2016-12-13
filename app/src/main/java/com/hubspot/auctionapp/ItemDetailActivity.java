@@ -143,9 +143,14 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
                     mSuggestedBids = new ArrayList<>();
                     mMinBid = null;
                     if (numBids == 0) {
-                        mNumBidsView.setText("SUGGESTED OPENING BID");
-                        mWinningBidsView.setText("$" + String.valueOf(mItem.openbid));
-                        mWinningBidsView.setTextColor(Color.parseColor("#425b76"));
+                        if (mItem.getIslive() == true) {
+                            mNumBidsView.setText("ATTEND LIVE AUCTION FOR BIDDING");
+                            mWinningBidsView.setText("LIVE ITEM");
+                        } else {
+                            mNumBidsView.setText("SUGGESTED OPENING BID");
+                            mWinningBidsView.setText("$" + String.valueOf(mItem.openbid));
+                            mWinningBidsView.setTextColor(Color.parseColor("#425b76"));
+                        }
                         mMinBid = mItem.openbid;
                         if (mMinBid < 50) {
                             mSuggestedBids.add(mMinBid + 1);
@@ -262,9 +267,6 @@ public class ItemDetailActivity extends BaseActivity implements View.OnClickList
                     Date LIVE_BIDDING_OPENS = new Date(1481752800000L); //"2016/12/14 17:00"
 
                     SimpleDateFormat sdf = new SimpleDateFormat("MM/dd HH:mm");
-
-                    Log.d("BIDDING_CLOSES", sdf.format(BIDDING_CLOSES));
-                    Log.d("BIDDING AVAILABLE", String.valueOf(now.before(BIDDING_CLOSES)));
 
                     if (now.after(BIDDING_CLOSES)) {
                         mBidButtonLow.setEnabled(false);
